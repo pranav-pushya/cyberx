@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>CyberX — CTF Helper</title>
+<link rel="stylesheet" href="css/style.css"/>
+<style>
+/* Custom style additions for CTF page */
+.hud-panel{position:fixed;font-size:9px;letter-spacing:1px;color:rgba(0,229,255,.4);line-height:2;pointer-events:none;z-index:50;}
+.hud-panel.tl{top:50px;left:14px;}
+.hud-panel.tr{top:50px;right:14px;text-align:right;}
+.hud-label{color:rgba(0,229,255,.2);font-size:8px;letter-spacing:3px;margin-bottom:2px;}
+.hud-val{color:#00e5ff;}.hud-val.g{color:#00ff41;}.hud-val.r{color:#ff003c;}.hud-val.p{color:#bf00ff;}
+.scanlines{position:fixed;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,65,.012) 2px,rgba(0,255,65,.012) 4px);}
+.vignette{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,4,10,.8) 100%);}
+.cx-tl,.cx-tr,.cx-bl,.cx-br{position:fixed;width:18px;height:18px;pointer-events:none;z-index:50;opacity:.3;}
+.cx-tl{top:50px;left:6px;border-top:1px solid #00e5ff;border-left:1px solid #00e5ff;}
+.cx-tr{top:50px;right:6px;border-top:1px solid #00e5ff;border-right:1px solid #00e5ff;}
+.cx-bl{bottom:62px;left:6px;border-bottom:1px solid #00e5ff;border-left:1px solid #00e5ff;}
+.cx-br{bottom:62px;right:6px;border-bottom:1px solid #00e5ff;border-right:1px solid #00e5ff;}
+.mini-radar-wrap{position:fixed;top:48px;right:14px;z-index:51;pointer-events:none;opacity:.7;}
+.wave-bars{display:flex;align-items:flex-end;gap:1px;height:24px;opacity:.3;position:fixed;z-index:50;}
+.wave-bars.wl{bottom:62px;left:14px;}.wave-bars.wr{bottom:62px;right:14px;}
+
+/* Quick Decoder grid */
+.quick-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+  margin-bottom: 14px;
+}
+@media (max-width: 600px) {
+  .quick-tools-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .quick-tools-grid button:last-child {
+    grid-column: span 2;
+  }
+}
+.quick-btn {
+  background: transparent;
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  color: #00e5ff;
+  font-family: var(--font);
+  font-size: 9.5px;
+  padding: 8px 6px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+  border-radius: 2px;
+}
+.quick-btn:hover {
+  background: rgba(0, 229, 255, 0.08);
+  border-color: #00e5ff;
+  box-shadow: 0 0 6px rgba(0, 229, 255, 0.15);
+}
+
+.ctf-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.ctf-chip {
+  padding: 6px 12px;
+  background: rgba(191, 0, 255, 0.04);
+  border: 1px solid rgba(191, 0, 255, 0.15);
+  color: rgba(191, 0, 255, 0.6);
+  font-family: var(--font);
+  font-size: 10px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 2px;
+}
+.ctf-chip:hover {
+  background: rgba(191, 0, 255, 0.08);
+  border-color: rgba(191, 0, 255, 0.4);
+  color: #bf00ff;
+}
+.ctf-chip.active {
+  background: rgba(191, 0, 255, 0.16);
+  border-color: #bf00ff;
+  color: #bf00ff;
+  box-shadow: 0 0 10px rgba(191, 0, 255, 0.2);
+}
+
+.platform-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 600px) {
+  .platform-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.platform-card {
+  border-left-color: var(--p) !important;
+  transition: all 0.3s;
+}
+.platform-card:hover {
+  border-left-color: #bf00ff !important;
+  box-shadow: 0 0 10px rgba(191, 0, 255, 0.1);
+  transform: translateY(-2px);
+}
+.platform-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.platform-link {
+  font-family: var(--hud);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1.5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.platform-link:hover {
+  color: #00e5ff;
+}
+.platform-difficulty {
+  font-size: 8px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-family: var(--hud);
+  font-weight: 700;
+  background: rgba(191, 0, 255, 0.15);
+  color: #bf00ff;
+  border: 1px solid rgba(191, 0, 255, 0.25);
+  letter-spacing: 1px;
+}
+.platform-desc {
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.decoder-textarea {
+  width: 100%;
+  min-height: 90px;
+  background: rgba(0, 4, 10, 0.85);
+  border: 1px solid var(--border2);
+  color: #fff;
+  font-family: monospace;
+  font-size: 12.5px;
+  padding: 10px;
+  box-sizing: border-box;
+  resize: vertical;
+  border-radius: 2px;
+}
+.decoder-textarea:focus {
+  border-color: #00e5ff;
+  outline: none;
+}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <div class="sb-logo">CYBER<span>X</span></div>
+  <div class="sb-item"><div class="sb-dot g"></div>SECURE</div>
+  <div class="sb-item"><div class="sb-dot b"></div>AI ONLINE</div>
+  <div class="sb-item"><div class="sb-dot r"></div>TLS 1.3</div>
+  <div class="sb-clock" id="sb-clock">00:00:00</div>
+  <div class="sb-page">CTF</div>
+</div>
+
+<!-- CORNER BRACKETS -->
+<div class="cx-tl"></div><div class="cx-tr"></div>
+<div class="cx-bl"></div><div class="cx-br"></div>
+
+<!-- HUD PANELS -->
+<div class="hud-panel tl">
+  <div class="hud-label">SYSTEM</div>
+  <div>CPU <span class="hud-val g" id="hud-cpu">--</span></div>
+  <div>MEM <span class="hud-val g" id="hud-mem">--</span></div>
+  <div>AI &nbsp;<span class="hud-val g">GROQ</span></div>
+</div>
+
+<!-- MINI RADAR -->
+<div class="mini-radar-wrap">
+  <canvas id="mini-radar" width="70" height="70"></canvas>
+</div>
+
+<!-- WAVEFORM BARS -->
+<div class="wave-bars wl" data-bars="14"></div>
+<div class="wave-bars wr" data-bars="14"></div>
+
+<!-- PAGE -->
+<main class="cx-page">
+  <div class="page-header">
+    <div class="page-header-icon">🏴</div>
+    <div>
+      <div class="page-header-title">CTF HELPER</div>
+      <div class="page-header-sub">// CAPTURE THE FLAG ASSISTANT</div>
+    </div>
+  </div>
+
+  <div class="cx-scan">&gt; AUTO DECODER & CRYPTO CRACKER</div>
+  <div class="cx-card reveal">
+    <textarea id="decoder-input" class="decoder-textarea" placeholder="Paste encoded string, cipher text, or hash here..."></textarea>
+    
+    <!-- Quick client-side decoders -->
+    <div class="quick-tools-grid">
+      <button class="quick-btn" onclick="runQuickDecode('b64')">BASE64 DECODE</button>
+      <button class="quick-btn" onclick="runQuickDecode('hex')">HEX TO TEXT</button>
+      <button class="quick-btn" onclick="runQuickDecode('bin')">BINARY TO TEXT</button>
+      <button class="quick-btn" onclick="runQuickDecode('url')">URL DECODE</button>
+      <button class="quick-btn" onclick="runQuickDecode('rot13')">ROT13</button>
+    </div>
+
+    <button id="auto-decode-btn" class="cx-btn blue" onclick="autoDecode()">🤖 AUTO DETECT & DECODE</button>
+  </div>
+
+  <!-- Auto Decoder output terminal -->
+  <div class="cx-terminal-wrap reveal" id="decoder-terminal" style="display: none;">
+    <div class="cx-terminal-bar">
+      <div class="tb-dot r"></div><div class="tb-dot y"></div><div class="tb-dot g"></div>
+      <div class="tb-name">AUTO_DECODER_OUTPUT.log</div>
+    </div>
+    <div class="cx-terminal-body" id="decoder-output"></div>
+  </div>
+
+  <div class="cx-scan">&gt; CTF CATEGORY TIPS</div>
+  <div class="ctf-chips reveal">
+    <span class="ctf-chip active" onclick="selectCtfCategory('WEB', this)">WEB</span>
+    <span class="ctf-chip" onclick="selectCtfCategory('CRYPTO', this)">CRYPTO</span>
+    <span class="ctf-chip" onclick="selectCtfCategory('FORENSICS', this)">FORENSICS</span>
+    <span class="ctf-chip" onclick="selectCtfCategory('OSINT', this)">OSINT</span>
+    <span class="ctf-chip" onclick="selectCtfCategory('REVERSE ENG', this)">REVERSE ENG</span>
+    <span class="ctf-chip" onclick="selectCtfCategory('STEGANOGRAPHY', this)">STEGANOGRAPHY</span>
+    <span class="ctf-chip" onclick="selectCtfCategory('MISC', this)">MISC</span>
+  </div>
+
+  <div class="cx-card reveal" style="margin-bottom: 24px;">
+    <button id="tips-btn" class="cx-btn" onclick="getCtfTips()">💡 GET TIPS FOR WEB</button>
+    
+    <div class="cx-terminal-wrap" id="tips-terminal" style="display: none; margin-top: 14px; margin-bottom: 0px;">
+      <div class="cx-terminal-bar">
+        <div class="tb-dot r"></div><div class="tb-dot y"></div><div class="tb-dot g"></div>
+        <div class="tb-name" id="tips-terminal-title">WEB_TIPS.log</div>
+      </div>
+      <div class="cx-terminal-body" id="tips-output"></div>
+    </div>
+  </div>
+
+  <div class="cx-scan">&gt; CHALLENGE WRITEUP HELPER</div>
+  <div class="cx-card reveal" style="margin-bottom: 24px;">
+    <textarea id="writeup-input" class="decoder-textarea" style="min-height: 80px;" placeholder="Describe the CTF challenge you're stuck on (e.g. 'I found a page with a login form, running Apache, there is a hint about cookie parameter...')"></textarea>
+    <button id="hints-btn" class="cx-btn" style="margin-top: 12px; margin-bottom: 0px;" onclick="getHints()">🔍 GET PROGRESSIVE HINTS</button>
+    
+    <div class="cx-terminal-wrap" id="hints-terminal" style="display: none; margin-top: 14px; margin-bottom: 0px;">
+      <div class="cx-terminal-bar">
+        <div class="tb-dot r"></div><div class="tb-dot y"></div><div class="tb-dot g"></div>
+        <div class="tb-name">CHALLENGE_HINTS.log</div>
+      </div>
+      <div class="cx-terminal-body" id="hints-output"></div>
+    </div>
+  </div>
+
+  <div class="cx-scan">&gt; TRAINING & COMPETITION PLATFORMS</div>
+  <div class="platform-grid reveal">
+    <!-- PicoCTF -->
+    <div class="cx-card platform-card">
+      <div class="platform-title-row">
+        <a href="https://picoctf.org/" target="_blank" class="platform-link">picoCTF 🌐</a>
+        <span class="platform-difficulty">BEGINNER</span>
+      </div>
+      <div class="platform-desc">
+        Designed by Carnegie Mellon University. Excellent for high schoolers, university students, and beginners looking to learn core security concepts across categories.
+      </div>
+    </div>
+
+    <!-- TryHackMe -->
+    <div class="cx-card platform-card">
+      <div class="platform-title-row">
+        <a href="https://tryhackme.com/" target="_blank" class="platform-link">TryHackMe 🌐</a>
+        <span class="platform-difficulty">BEGINNER - INT</span>
+      </div>
+      <div class="platform-desc">
+        Highly popular training platform with interactive, guided rooms and learning pathways. Teaches security theories alongside hands-on laboratory exercises.
+      </div>
+    </div>
+
+    <!-- HackTheBox -->
+    <div class="cx-card platform-card">
+      <div class="platform-title-row">
+        <a href="https://www.hackthebox.com/" target="_blank" class="platform-link">Hack The Box 🌐</a>
+        <span class="platform-difficulty">INT - ADVANCED</span>
+      </div>
+      <div class="platform-desc">
+        Premium labs and realistic penetration testing machines. Ideal for intermediate to advanced hackers preparing for OSCP/OSCE certifications.
+      </div>
+    </div>
+
+    <!-- PortSwigger Web Security Academy -->
+    <div class="cx-card platform-card">
+      <div class="platform-title-row">
+        <a href="https://portswigger.net/web-security" target="_blank" class="platform-link">PortSwigger Academy 🌐</a>
+        <span class="platform-difficulty">BEG - ADVANCED</span>
+      </div>
+      <div class="platform-desc">
+        Deep dive web application security academy. Highly detailed tutorials and hands-on vulnerability labs covering SQLi, XSS, SSRF, JWT, and CSRF.
+      </div>
+    </div>
+
+    <!-- CTFtime -->
+    <div class="cx-card platform-card" style="grid-column: span 2;">
+      <div class="platform-title-row">
+        <a href="https://ctftime.org/" target="_blank" class="platform-link">CTFtime 🌐</a>
+        <span class="platform-difficulty">ALL LEVELS</span>
+      </div>
+      <div class="platform-desc">
+        The primary global hub for CTF events. Lists schedules, rules, links, and hosts a worldwide team rating system showing top team rankings.
+      </div>
+    </div>
+  </div>
+</main>
+
+<nav class="cx-bottom-nav">
+  <a href="index.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>HOME</a>
+  <a href="learn.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>LEARN</a>
+  <button class="cx-nav-item" id="nav-tools-btn"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>TOOLS</button>
+  <a href="ai-chat.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI</a>
+  <button class="cx-nav-item active" id="nav-more-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>MORE</button>
+</nav>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script src="js/hud.js"></script>
+<script>
+let selectedCategory = 'WEB';
+
+// Client-side quick decoders
+function runQuickDecode(type) {
+  const inputEl = document.getElementById('decoder-input');
+  const termEl = document.getElementById('decoder-terminal');
+  const outputEl = document.getElementById('decoder-output');
+  
+  const val = inputEl.value;
+  if (!val) {
+    termEl.style.display = 'block';
+    outputEl.innerHTML = '<span class="t-r">[ERROR] Textarea input is empty. Paste data first.</span>';
+    return;
+  }
+  
+  termEl.style.display = 'block';
+  let res = '';
+  
+  if (type === 'b64') {
+    try {
+      res = atob(val.trim());
+    } catch (e) {
+      res = `[ERROR] Invalid Base64: ${e.message}`;
+    }
+  } else if (type === 'hex') {
+    try {
+      const clean = val.replace(/0x/g, '').replace(/[^a-fA-F0-9]/g, '');
+      if (clean.length % 2 !== 0) {
+        res = '[ERROR] Hex string must contain an even number of characters.';
+      } else {
+        let text = '';
+        for (let i = 0; i < clean.length; i += 2) {
+          text += String.fromCharCode(parseInt(clean.substr(i, 2), 16));
+        }
+        res = text;
+      }
+    } catch (e) {
+      res = `[ERROR] Hex Decode Failed: ${e.message}`;
+    }
+  } else if (type === 'bin') {
+    try {
+      const clean = val.replace(/[^01\s]/g, '').trim();
+      if (!clean) {
+        res = '[ERROR] Input is not a valid binary string.';
+      } else {
+        res = clean.split(/\s+/).map(x => String.fromCharCode(parseInt(x, 2))).join('');
+      }
+    } catch (e) {
+      res = `[ERROR] Binary Decode Failed: ${e.message}`;
+    }
+  } else if (type === 'url') {
+    try {
+      res = decodeURIComponent(val);
+    } catch (e) {
+      res = `[ERROR] URL Decode Failed: ${e.message}`;
+    }
+  } else if (type === 'rot13') {
+    res = val.replace(/[a-zA-Z]/g, function(c) {
+      return String.fromCharCode((c <= "Z" ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26);
+    });
+  }
+  
+  outputEl.innerHTML = `<span class="t-b">&gt; CLIENT-SIDE DECODE OUTPUT (${type.toUpperCase()}):</span>\n\n<span class="t-w">${escapeHTML(res)}</span>`;
+}
+
+// AI Auto Decoder
+async function autoDecode() {
+  const inputEl = document.getElementById('decoder-input');
+  const termEl = document.getElementById('decoder-terminal');
+  const outputEl = document.getElementById('decoder-output');
+  const btn = document.getElementById('auto-decode-btn');
+  
+  const val = inputEl.value.trim();
+  if (!val) {
+    termEl.style.display = 'block';
+    outputEl.innerHTML = '<span class="t-r">[ERROR] Textarea is empty.</span>';
+    return;
+  }
+  
+  termEl.style.display = 'block';
+  outputEl.innerHTML = '<span class="t-g">&gt; INITIATING CRYPTO-ANALYZER MODULE...</span>\n<span class="t-d">&gt; Querying AI oracle...</span>';
+  
+  const oldText = btn.innerHTML;
+  btn.innerHTML = '🤖 ANALYZING...';
+  btn.disabled = true;
+  
+  try {
+    const prompt = `Analyze this string and identify what encoding/cipher/hash it is, then decode or crack it if possible, or explain how to approach it:\n\n${val}\n\nIdentify: Base64, ROT13, hex, binary, MD5/SHA hash, Caesar cipher, morse code, URL encoding, JWT token, etc. Show step by step. Keep hacker style. Under 300 words.`;
+    const responseText = await askGroq(prompt);
+    outputEl.innerHTML = `<span class="t-g">&gt; ANALYSIS COMPLETE:</span>\n\n<span class="t-w">${escapeHTML(responseText)}</span>`;
+  } catch (e) {
+    outputEl.innerHTML = `<span class="t-r">[CONNECTION ERROR] AI Module query failed: ${escapeHTML(e.message)}</span>`;
+  }
+  
+  btn.innerHTML = oldText;
+  btn.disabled = false;
+}
+
+// Select CTF Category chip
+function selectCtfCategory(cat, el) {
+  selectedCategory = cat;
+  document.querySelectorAll('.ctf-chips .ctf-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tips-btn').textContent = `💡 GET TIPS FOR ${cat}`;
+}
+
+// Get CTF Tips from AI
+async function getCtfTips() {
+  const termEl = document.getElementById('tips-terminal');
+  const outputEl = document.getElementById('tips-output');
+  const titleEl = document.getElementById('tips-terminal-title');
+  const btn = document.getElementById('tips-btn');
+  
+  termEl.style.display = 'block';
+  titleEl.textContent = `${selectedCategory.replace(' ', '_')}_TIPS.log`;
+  outputEl.innerHTML = `<span class="t-g">&gt; ACCESSING INTEL CORNER FOR category: ${selectedCategory}...</span>\n<span class="t-d">&gt; Fetching cheatsheets...</span>`;
+  
+  const oldText = btn.innerHTML;
+  btn.innerHTML = '🤖 RETRIEVING...';
+  btn.disabled = true;
+  
+  try {
+    const prompt = `Give me 5-7 specific tips, tricks and common patterns for ${selectedCategory} CTF challenges. Include tool names and actual commands. For beginners. Under 300 words. Keep it structured.`;
+    const responseText = await askGroq(prompt);
+    outputEl.innerHTML = `<span class="t-g">&gt; CHEATSHEET INTEL LOADED:</span>\n\n<span class="t-w">${escapeHTML(responseText)}</span>`;
+  } catch (e) {
+    outputEl.innerHTML = `<span class="t-r">[Intel Retrieval Failure]: ${escapeHTML(e.message)}</span>`;
+  }
+  
+  btn.innerHTML = oldText;
+  btn.disabled = false;
+}
+
+// Challenge hints
+async function getHints() {
+  const inputEl = document.getElementById('writeup-input');
+  const termEl = document.getElementById('hints-terminal');
+  const outputEl = document.getElementById('hints-output');
+  const btn = document.getElementById('hints-btn');
+  
+  const val = inputEl.value.trim();
+  if (!val) {
+    termEl.style.display = 'block';
+    outputEl.innerHTML = '<span class="t-r">[ERROR] Please describe the challenge first.</span>';
+    return;
+  }
+  
+  termEl.style.display = 'block';
+  outputEl.innerHTML = '<span class="t-g">&gt; ANALYZING CHALLENGE STRUCTURE...</span>\n<span class="t-d">&gt; Generating progressive hints...</span>';
+  
+  const oldText = btn.innerHTML;
+  btn.innerHTML = '🤖 SCANNING CTF DB...';
+  btn.disabled = true;
+  
+  try {
+    const prompt = `I am stuck on a CTF challenge. Here is the description:\n\n${val}\n\nGive me 3 progressive hints from subtle to more obvious. Do NOT give the full solution. Focus on helping me learn and solve it myself. Keep it under 250 words. Format with Hint 1, Hint 2, Hint 3.`;
+    const responseText = await askGroq(prompt);
+    outputEl.innerHTML = `<span class="t-g">&gt; HINTS GENERATED SUCCESSFULLY:</span>\n\n<span class="t-w">${escapeHTML(responseText)}</span>`;
+  } catch (e) {
+    outputEl.innerHTML = `<span class="t-r">[HINT RETRIEVAL ERROR]: ${escapeHTML(e.message)}</span>`;
+  }
+  
+  btn.innerHTML = oldText;
+  btn.disabled = false;
+}
+
+function escapeHTML(str) {
+  return str.replace(/[&<>'"]/g, 
+    tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag)
+  );
+}
+
+// Initial setup to run IntersectionObserver for dynamic/lazy loads
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.IntersectionObserver) {
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('vis');
+            obs.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.08 });
+      document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    } else {
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('vis'));
+    }
+  });
+} else {
+  if (window.IntersectionObserver) {
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('vis');
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+  } else {
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('vis'));
+  }
+}
+</script>
+
+<!-- ══════════════ NAVIGATION POPUPS ══════════════ -->
+<style>
+.cx-nav-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 4, 10, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.cx-nav-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.cx-nav-popup {
+  width: 100%;
+  max-width: 500px;
+  background: rgba(0, 4, 10, 0.95);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  border-bottom: none;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  box-shadow: 0 -10px 40px rgba(0, 229, 255, 0.2);
+  padding: 20px 16px 30px;
+  box-sizing: border-box;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cx-nav-overlay.active .cx-nav-popup {
+  transform: translateY(0);
+}
+.cx-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+  padding-bottom: 10px;
+}
+.cx-popup-header span {
+  font-family: var(--hud, 'Orbitron', monospace);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--b, #00e5ff);
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
+}
+.cx-popup-close {
+  background: transparent;
+  border: none;
+  color: rgba(0, 229, 255, 0.5);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0 6px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.cx-popup-close:hover {
+  color: var(--r, #ff003c);
+}
+.cx-popup-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cx-popup-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(0, 229, 255, 0.02);
+  border: 1px solid rgba(0, 229, 255, 0.08);
+  border-radius: 4px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.cx-popup-item:hover {
+  background: rgba(0, 229, 255, 0.08);
+  border-color: var(--b, #00e5ff);
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
+}
+.cx-popup-icon {
+  font-size: 22px;
+}
+.cx-popup-text {
+  display: flex;
+  flex-direction: column;
+}
+.cx-popup-title {
+  font-family: var(--hud, 'Orbitron', monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--b, #00e5ff);
+}
+.cx-popup-desc {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+.cx-popup-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media (max-width: 420px) {
+  .cx-popup-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.cx-popup-grid-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 6px;
+  background: rgba(0, 255, 65, 0.02);
+  border: 1px solid rgba(0, 255, 65, 0.08);
+  border-radius: 4px;
+  text-decoration: none;
+  transition: all 0.2s;
+  text-align: center;
+}
+.cx-popup-grid-item:hover {
+  background: rgba(0, 255, 65, 0.08);
+  border-color: var(--g, #00ff41);
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.15);
+}
+.cx-popup-grid-icon {
+  font-size: 22px;
+}
+.cx-popup-grid-name {
+  font-family: var(--hud, 'Orbitron', monospace);
+  font-size: 8px;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+</style>
+
+<div class="cx-nav-overlay" id="cx-tools-overlay">
+  <div class="cx-nav-popup" id="cx-tools-popup">
+    <div class="cx-popup-header">
+      <span>// TOOLS ENGINE</span>
+      <button class="cx-popup-close" id="cx-tools-close">&times;</button>
+    </div>
+    <div class="cx-popup-list">
+      <a href="tools.html" class="cx-popup-item">
+        <span class="cx-popup-icon">🔧</span>
+        <div class="cx-popup-text">
+          <span class="cx-popup-title">TOOL ANALYZER</span>
+          <span class="cx-popup-desc">Deep dive into Nmap, Burp, Metasploit</span>
+        </div>
+      </a>
+      <a href="commands.html" class="cx-popup-item">
+        <span class="cx-popup-icon">💻</span>
+        <div class="cx-popup-text">
+          <span class="cx-popup-title">KALI COMMANDS</span>
+          <span class="cx-popup-desc">Quick terminal commands reference</span>
+        </div>
+      </a>
+      <a href="osint.html" class="cx-popup-item">
+        <span class="cx-popup-icon">🔍</span>
+        <div class="cx-popup-text">
+          <span class="cx-popup-title">OSINT TOOLKIT</span>
+          <span class="cx-popup-desc">Domain, email, IP and image forensics</span>
+        </div>
+      </a>
+      <a href="ports.html" class="cx-popup-item">
+        <span class="cx-popup-icon">🔌</span>
+        <div class="cx-popup-text">
+          <span class="cx-popup-title">PORT REFERENCE</span>
+          <span class="cx-popup-desc">Protocol registry & CEH exam mode</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="cx-nav-overlay" id="cx-more-overlay">
+  <div class="cx-nav-popup" id="cx-more-popup">
+    <div class="cx-popup-header">
+      <span>// MORE MODULES</span>
+      <button class="cx-popup-close" id="cx-more-close">&times;</button>
+    </div>
+    <div class="cx-popup-grid">
+      <a href="attacks.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">💀</span>
+        <span class="cx-popup-grid-name">ATTACKS</span>
+      </a>
+      <a href="roadmap.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">🗺️</span>
+        <span class="cx-popup-grid-name">ROADMAP</span>
+      </a>
+      <a href="notes.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">📝</span>
+        <span class="cx-popup-grid-name">NOTES</span>
+      </a>
+      <a href="ctf.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">🏴</span>
+        <span class="cx-popup-grid-name">CTF HELPER</span>
+      </a>
+      <a href="quiz.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">🎯</span>
+        <span class="cx-popup-grid-name">QUIZ</span>
+      </a>
+      <a href="index.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">📊</span>
+        <span class="cx-popup-grid-name">PROGRESS</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const toolsBtn = document.getElementById('nav-tools-btn');
+  const moreBtn = document.getElementById('nav-more-btn');
+  const toolsOverlay = document.getElementById('cx-tools-overlay');
+  const moreOverlay = document.getElementById('cx-more-overlay');
+  const toolsClose = document.getElementById('cx-tools-close');
+  const moreClose = document.getElementById('cx-more-close');
+
+  function openPopup(overlay) {
+    overlay.style.display = 'flex';
+    overlay.offsetHeight;
+    overlay.classList.add('active');
+  }
+
+  function closePopup(overlay) {
+    overlay.classList.remove('active');
+    setTimeout(() => {
+      if (!overlay.classList.contains('active')) {
+        overlay.style.display = 'none';
+      }
+    }, 250);
+  }
+
+  if (toolsBtn && toolsOverlay) {
+    toolsBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openPopup(toolsOverlay);
+      closePopup(moreOverlay);
+    });
+  }
+  if (moreBtn && moreOverlay) {
+    moreBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openPopup(moreOverlay);
+      closePopup(toolsOverlay);
+    });
+  }
+  if (toolsClose && toolsOverlay) {
+    toolsClose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closePopup(toolsOverlay);
+    });
+  }
+  if (moreClose && moreOverlay) {
+    moreClose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closePopup(moreOverlay);
+    });
+  }
+
+  window.addEventListener('click', (e) => {
+    if (toolsOverlay && e.target === toolsOverlay) {
+      closePopup(toolsOverlay);
+    }
+    if (moreOverlay && e.target === moreOverlay) {
+      closePopup(moreOverlay);
+    }
+  });
+})();
+</script>
+</body>
+</html>

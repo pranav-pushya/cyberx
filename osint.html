@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>CyberX — OSINT Toolkit</title>
+<link rel="stylesheet" href="css/style.css"/>
+<style>
+/* Custom style additions for OSINT page */
+.hud-panel{position:fixed;font-size:9px;letter-spacing:1px;color:rgba(0,229,255,.4);line-height:2;pointer-events:none;z-index:50;}
+.hud-panel.tl{top:50px;left:14px;}
+.hud-panel.tr{top:50px;right:14px;text-align:right;}
+.hud-label{color:rgba(0,229,255,.2);font-size:8px;letter-spacing:3px;margin-bottom:2px;}
+.hud-val{color:#00e5ff;}.hud-val.g{color:#00ff41;}.hud-val.r{color:#ff003c;}.hud-val.p{color:#bf00ff;}
+.scanlines{position:fixed;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,65,.012) 2px,rgba(0,255,65,.012) 4px);}
+.vignette{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,4,10,.8) 100%);}
+.cx-tl,.cx-tr,.cx-bl,.cx-br{position:fixed;width:18px;height:18px;pointer-events:none;z-index:50;opacity:.3;}
+.cx-tl{top:50px;left:6px;border-top:1px solid #00e5ff;border-left:1px solid #00e5ff;}
+.cx-tr{top:50px;right:6px;border-top:1px solid #00e5ff;border-right:1px solid #00e5ff;}
+.cx-bl{bottom:62px;left:6px;border-bottom:1px solid #00e5ff;border-left:1px solid #00e5ff;}
+.cx-br{bottom:62px;right:6px;border-bottom:1px solid #00e5ff;border-right:1px solid #00e5ff;}
+.mini-radar-wrap{position:fixed;top:48px;right:14px;z-index:51;pointer-events:none;opacity:.7;}
+.wave-bars{display:flex;align-items:flex-end;gap:1px;height:24px;opacity:.3;position:fixed;z-index:50;}
+.wave-bars.wl{bottom:62px;left:14px;}.wave-bars.wr{bottom:62px;right:14px;}
+
+/* Tools Grid Layout */
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+  margin-bottom: 24px;
+}
+@media (max-width: 900px) {
+  .tools-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .tools-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Tool badge colors */
+.tool-badge {
+  display: inline-block;
+  font-size: 8.5px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-family: var(--hud);
+  font-weight: 700;
+  margin-bottom: 8px;
+  border: 1px solid currentColor;
+  letter-spacing: 1px;
+}
+.tool-badge.domain { color: #00e5ff; background: rgba(0, 229, 255, 0.08); }
+.tool-badge.email { color: #00ff41; background: rgba(0, 255, 65, 0.08); }
+.tool-badge.ip-dns { color: #ffd700; background: rgba(255, 215, 0, 0.08); }
+.tool-badge.social { color: #bf00ff; background: rgba(191, 0, 255, 0.08); }
+.tool-badge.image { color: #00ff41; background: rgba(0, 255, 65, 0.08); }
+.tool-badge.metadata { color: #00e5ff; background: rgba(0, 229, 255, 0.08); }
+.tool-badge.dark-web { color: #ff003c; background: rgba(255, 0, 60, 0.08); }
+
+.tool-desc {
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 12px;
+  min-height: 33px;
+}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <div class="sb-logo">CYBER<span>X</span></div>
+  <div class="sb-item"><div class="sb-dot g"></div>SECURE</div>
+  <div class="sb-item"><div class="sb-dot b"></div>AI ONLINE</div>
+  <div class="sb-item"><div class="sb-dot r"></div>TLS 1.3</div>
+  <div class="sb-clock" id="sb-clock">00:00:00</div>
+  <div class="sb-page">OSINT</div>
+</div>
+
+<!-- CORNER BRACKETS -->
+<div class="cx-tl"></div><div class="cx-tr"></div>
+<div class="cx-bl"></div><div class="cx-br"></div>
+
+<!-- HUD PANELS -->
+<div class="hud-panel tl">
+  <div class="hud-label">RECON</div>
+  <div>TARGETS <span class="hud-val g">ACTIVE</span></div>
+  <div>AI MAPPING <span class="hud-val g">READY</span></div>
+  <div>SENSORS <span class="hud-val g">19/19</span></div>
+</div>
+
+<!-- MINI RADAR -->
+<div class="mini-radar-wrap">
+  <canvas id="mini-radar" width="70" height="70"></canvas>
+</div>
+
+<!-- WAVEFORM BARS -->
+<div class="wave-bars wl" data-bars="14"></div>
+<div class="wave-bars wr" data-bars="14"></div>
+
+<!-- PAGE -->
+<main class="cx-page">
+  <div class="page-header">
+    <div class="page-header-icon">🔍</div>
+    <div>
+      <div class="page-header-title">OSINT TOOLKIT</div>
+      <div class="page-header-sub">// OPEN SOURCE INTELLIGENCE TOOLS</div>
+    </div>
+  </div>
+
+  <!-- Disclaimer card -->
+  <div class="cx-card red reveal">
+    <div class="cx-card-label" style="color: var(--r); font-weight: bold;">⚠️ WARNING // AUTHORIZED USE ONLY</div>
+    <div class="cx-output" style="font-size: 11px; line-height: 1.6; color: rgba(255, 255, 255, 0.85);">
+      This toolkit is designed exclusively for authorized penetration testing, security auditing, and educational research on systems you own or have explicit written permission to audit. Tracking or scanning target infrastructure without proper consent is strictly prohibited under cyber regulations.
+    </div>
+  </div>
+
+  <!-- Shared Output Terminal for How to Use Guide -->
+  <div class="cx-terminal-wrap reveal" id="guide-terminal" style="display: none; margin-bottom: 20px;">
+    <div class="cx-terminal-bar">
+      <div class="tb-dot r"></div><div class="tb-dot y"></div><div class="tb-dot g"></div>
+      <div class="tb-name" id="guide-terminal-title">OSINT_GUIDE.log</div>
+    </div>
+    <div class="cx-terminal-body" id="guide-output"></div>
+  </div>
+
+  <!-- Category chips -->
+  <div class="cx-scan">&gt; SELECT OSINT CATEGORY</div>
+  <div class="cx-chips reveal" id="osint-chips">
+    <span class="cx-chip active" onclick="filterCategory('ALL', this)">ALL</span>
+    <span class="cx-chip" onclick="filterCategory('DOMAIN', this)">DOMAIN</span>
+    <span class="cx-chip" onclick="filterCategory('EMAIL', this)">EMAIL</span>
+    <span class="cx-chip" onclick="filterCategory('IP/DNS', this)">IP/DNS</span>
+    <span class="cx-chip" onclick="filterCategory('SOCIAL', this)">SOCIAL</span>
+    <span class="cx-chip" onclick="filterCategory('IMAGE', this)">IMAGE</span>
+    <span class="cx-chip" onclick="filterCategory('METADATA', this)">METADATA</span>
+    <span class="cx-chip" onclick="filterCategory('DARK WEB', this)">DARK WEB</span>
+  </div>
+
+  <!-- Tool grid -->
+  <div class="tools-grid">
+    <!-- 1. ExifInfo.org -->
+    <div class="cx-card blue reveal" data-category="METADATA">
+      <span class="tool-badge metadata">METADATA</span>
+      <div class="cx-card-title">exifinfo.org</div>
+      <div class="tool-desc">Online photo metadata viewer for reading EXIF tags, GPS coords, and camera model.</div>
+      <div class="cx-btn-row">
+        <a href="https://exifinfo.org" target="_blank" class="cx-btn">OPEN TOOL</a>
+        <button class="cx-btn" onclick="showHowToUse('exifinfo.org')">HOW TO USE</button>
+      </div>
+    </div>
+
+    <!-- 2. FotoForensics -->
+    <div class="cx-card reveal" data-category="IMAGE">
+      <span class="tool-badge image">IMAGE</span>
+      <div class="cx-card-title">FotoForensics</div>
+      <div class="tool-desc">Digital photo forensics using error level analysis (ELA) to identify altered regions.</div>
+      <div class="cx-btn-row">
+        <a href="https://fotoforensics.com" target="_blank" class="cx-btn">OPEN TOOL</a>
+        <button class="cx-btn" onclick="showHowToUse('FotoForensics')">HOW TO USE</button>
+      </div>
+    </div>
+
+    <!-- 3. Mattw.io -->
+    <div class="cx-card blue reveal" data-category="SOCIAL">
+      <span class="tool-badge social">SOCIAL</span>
+      <div class="cx-card-title">mattw.io</div>
+      <div class="tool-desc">YouTube metadata crawlers, comment viewers, and channel structure analysis resources.</div>
+      <div class="cx-btn-row">
+        <a href="https://mattw.io" target="_blank" class="cx-btn">OPEN TOOL</a>
+        <button class="cx-btn" onclick="showHowToUse('mattw.io')">HOW TO USE</button>
+      </div>
+    </div>
+
+    <!-- 4. Behind The Email -->
+    <div class="cx-card reveal" data-category="EMAIL">
+      <span class="tool-badge email">EMAIL</span>
+      <div class="cx-card-title">behindtheemail</div>
+      <div class="tool-desc">Deep email header analysis and raw message tracking to trace sender source.</div>
+      <div class="cx-btn-row">
+        <a href="https://behindtheemail.com" target="_blank" class="cx-btn">OPEN TOOL</a>
+        <button class="cx-btn" onclick="showHowToUse('behindtheemail.com')">HOW TO USE</button>
+      </div>
+    </div>
+
+    <!-- 5. Hunter.io Verify -->
+    <div class="cx-card reveal" data-category="EMAIL">
+      <span class="tool-badge email">EMAIL</span>
+      <div class="cx-card-title">Hunter Verify</div>
+      <div class="tool-desc">Status and deliverability checker for professional email address verification.</div>
+      <div class="cx-btn-row">
+        <a href="https://hunter.io/verify" target="_blank" class="cx-btn">OPEN TOOL</a>
+        <button class="cx-btn" onclick="showHowToUse('Hunter.io Verify')">HOW TO USE</button>
+      </div>
+    </div>
+
+    <!-- 6. Who.is -->
+    <div class="cx-card blue reveal" data-category="DOMAIN">
+      <span class="tool-badge domain">DOMAIN</span>
+      <div class="cx-card-title">who.is</div>
+      <div class="tool-desc">Registrar detail lookups, expiry metrics, server lists, and raw registration text.</div>
+      <div class="cx-btn-row">
+        <a href="https://who.is" target="_blank" class="cx-btn">OPEN TOOL</a>
+        <button class="cx-btn" onclick="showHowToUse('who.is')">HOW TO USE</button>
+      </div>
+    </div>
+
+    <!-- 7. DNS Checker -->
+    <div class="cx-card reveal" data-category="IP/DNS">
+      <span class="tool-badge ip-dns">IP/DNS</span>
+      <div class="cx-card-title">dnschecker.org</div>
+      <div class="tool-desc">Global DNS propagation metrics checking across dozens of international servers.</div>
+      <div class="cx-btn-row">
+        <a href="https://dnschecker.org" target="_blank" class="cx-btn">OPEN TOOL</a>
+        <button class="cx-btn" onclick="showHowToUse('dnschecker.org')">HOW TO USE</button>
+      </div>
+    </div>
+
+    <!-- 8. IPInfo.io -->
+    <div class="cx-card blue reveal" data-category="IP/DNS">
+      <span class="tool-badge ip-dns">IP/DNS</span>
+      <div class="cx-card-title">ipinfo.io</div>
+      <div class="tool-desc">Geo-coordinates lookup, ISP mappings, ASN numbers, and proxy detection checks.</div>
+      <div class="cx-btn-row">
+        <a href="https://ipinfo.io" target="_blank" class="cx-btn">OPEN TOOL</a>
+        <button class="cx-btn" onclick="showHowToUse('ipinfo.io')">HOW TO USE</button>
+      </div>
+    </div>
+
+    <!-- 9. MX Toolbox -->
+    <div class="cx-card reveal" data-category="EMAIL">
+      <span class="tool-badge email">EMAIL</span>
+      <div class="cx-card-title">mxtoolbox.com</div>
+      <div class="tool-desc">Diagnostic toolbox for mail servers, blacklist entries, DNS MX lookup records.</div>
+      <div class="cx-btn-row">
+        <a href="https://mxtoolbox.com" target="_blank" class="cx-btn">OPEN TOOL</a>
+        <button class="cx-btn" onclick="showHowToUse('mxtoolbox.com')">HOW TO USE</button>
+      </div>
+    </div>
+
+    <!-- 10. VirusTotal -->
+    <div class="cx-card yellow reveal" data-category="IP/DNS">
+      <span class="tool-badge ip-dns">IP/DNS</span>
+      <div class="cx-card-title">VirusTotal</div>
+      <div class="tool-desc">Aggregate engine scanning files, URLs, domains, and IPs against 70+ threat databases.</div>
+      <div class="cx-btn-row">
+        <a href="https://www.virustotal.com" target="_blank" class="cx-btn">OPEN TOOL</a>
+        <button class="cx-btn" onclick="showHowToUse('VirusTotal')">HOW TO USE</button>
+      </div>
+    </div>
+
+    <!-- 11. Shodan -->
+    <div class="cx-card yellow reveal" data-category="IP/DNS">
+      <span class="tool-badge ip-dns">IP/DNS</span>
+      <div class="cx-card-title">Shodan.io</div>
+      <div class="tool-desc">Deep search portal for internet-connected routers, open webcams, and SCADA servers.</div>
+      <div class="cx-btn-row">
+        <a href="https://www.shodan.io" target="_blank" class="cx-btn">OPEN TOOL</a>
+        <button class="cx-btn" onclick="showHowToUse('Shodan.io')">HOW TO USE</button>
+      </div>
+    </div>
+
+    <!-- 12. Maltego -->
+    <div class="cx-card yellow reveal" data-category="DOMAIN">
+      <span class="tool-badge domain">DOMAIN</span>
+      <div class="cx-card-title">Maltego</div>
+      <div class="tool-desc">Graph-based target relationship mapping, email trace chains, and connection layout charts.</div>
+      <div class="cx-btn-row">
+        <a href="https://www.maltego.com" target="_blank" class="cx-btn">OPEN TOOL</a>
+        <button class="cx-btn" onclick="showHowToUse('Maltego')">HOW TO USE</button>
+      </div>
+    </div>
+
+    <!-- 13. TheHarvester -->
+    <div class="cx-card yellow reveal" data-category="EMAIL">
+      <span class="tool-badge email">EMAIL</span>
+      <div class="cx-card-title">theHarvester</div>
+      <div class="tool-desc">Active information harvester for domain subdomains, targets, emails, and hostnames.</div>
+      <div class="cx-btn-row">
+        <a href="https://github.com/laramies/theHarvester" target="_blank" class="cx-btn">OPEN TOOL</a>
+        <button class="cx-btn" onclick="showHowToUse('theHarvester')">HOW TO USE</button>
+      </div>
+    </div>
+
+    <!-- 14. OSINT Framework -->
+    <div class="cx-card blue reveal" data-category="DOMAIN">
+      <span class="tool-badge domain">DOMAIN</span>
+      <div class="cx-card-title">OSINT Framework</div>
+      <div class="tool-desc">Expansive directory map indexing open source security intelligence resource APIs.</div>
+      <div class="cx-btn-row">
+        <a href="https://osintframework.com" target="_blank" class="cx-btn">OPEN TOOL</a>
+        <button class="cx-btn" onclick="showHowToUse('OSINT Framework')">HOW TO USE</button>
+      </div>
+    </div>
+
+    <!-- 15. Wayback Machine -->
+    <div class="cx-card blue reveal" data-category="DOMAIN">
+      <span class="tool-badge domain">DOMAIN</span>
+      <div class="cx-card-title">Wayback Machine</div>
+      <div class="tool-desc">Internet digital archive storing historical page screenshots and legacy URL code versions.</div>
+      <div class="cx-btn-row">
+        <a href="https://archive.org" target="_blank" class="cx-btn">OPEN TOOL</a>
+        <button class="cx-btn" onclick="showHowToUse('Wayback Machine')">HOW TO USE</button>
+      </div>
+    </div>
+
+    <!-- 16. Censys -->
+    <div class="cx-card yellow reveal" data-category="IP/DNS">
+      <span class="tool-badge ip-dns">IP/DNS</span>
+      <div class="cx-card-title">Censys.io</div>
+      <div class="tool-desc">Infrastructure tracking scanner for finding active assets, certificates, and servers.</div>
+      <div class="cx-btn-row">
+        <a href="https://censys.io" target="_blank" class="cx-btn">OPEN TOOL</a>
+        <button class="cx-btn" onclick="showHowToUse('Censys.io')">HOW TO USE</button>
+      </div>
+    </div>
+
+    <!-- 17. Recon-ng -->
+    <div class="cx-card yellow reveal" data-category="DOMAIN">
+      <span class="tool-badge domain">DOMAIN</span>
+      <div class="cx-card-title">Recon-ng</div>
+      <div class="tool-desc">Module-based CLI database scanner framework for structured website reconnaissance.</div>
+      <div class="cx-btn-row">
+        <a href="https://github.com/lanmaster53/recon-ng" target="_blank" class="cx-btn">OPEN TOOL</a>
+        <button class="cx-btn" onclick="showHowToUse('Recon-ng')">HOW TO USE</button>
+      </div>
+    </div>
+
+    <!-- 18. Ahmia.fi -->
+    <div class="cx-card yellow reveal" data-category="DARK WEB">
+      <span class="tool-badge dark-web">DARK WEB</span>
+      <div class="cx-card-title">Ahmia.fi</div>
+      <div class="tool-desc">Hidden service crawler index tracking online active .onion nodes on the Tor network.</div>
+      <div class="cx-btn-row">
+        <a href="https://ahmia.fi" target="_blank" class="cx-btn">OPEN TOOL</a>
+        <button class="cx-btn" onclick="showHowToUse('Ahmia.fi')">HOW TO USE</button>
+      </div>
+    </div>
+
+    <!-- 19. Tor Project -->
+    <div class="cx-card yellow reveal" data-category="DARK WEB">
+      <span class="tool-badge dark-web">DARK WEB</span>
+      <div class="cx-card-title">Tor Project</div>
+      <div class="tool-desc">Onion routing privacy browser software and server node status portal.</div>
+      <div class="cx-btn-row">
+        <a href="https://www.torproject.org" target="_blank" class="cx-btn">OPEN TOOL</a>
+        <button class="cx-btn" onclick="showHowToUse('Tor Project')">HOW TO USE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Google Dork Generator -->
+  <div class="cx-scan">&gt; GOOGLE DORK GENERATOR</div>
+  <div class="cx-card reveal" style="margin-bottom: 24px;">
+    <div class="cx-card-label">&gt; DEFINE TARGET TYPE OR FILE EXTENSION</div>
+    <div class="cx-input-row">
+      <input type="text" id="dork-target" class="cx-input" placeholder="e.g., login page, file server, camera, database...">
+      <button id="dork-btn" class="cx-send" onclick="generateDorks()">GENERATE</button>
+    </div>
+    
+    <div class="cx-terminal-wrap" id="dorks-terminal" style="display: none; margin-top: 14px; margin-bottom: 0px;">
+      <div class="cx-terminal-bar">
+        <div class="tb-dot r"></div><div class="tb-dot y"></div><div class="tb-dot g"></div>
+        <div class="tb-name">GOOGLE_DORKS.log</div>
+      </div>
+      <div class="cx-terminal-body" id="dorks-output"></div>
+    </div>
+  </div>
+
+  <!-- Workflow Generator -->
+  <div class="cx-scan">&gt; OSINT RECON WORKFLOW</div>
+  <div class="cx-card reveal" style="margin-bottom: 24px;">
+    <div class="cx-card-label">&gt; AUTOMATED WORKFLOW GENERATOR</div>
+    <button id="workflow-btn" class="cx-btn blue" onclick="generateWorkflow()">⚙️ GENERATE RECON WORKFLOW</button>
+    
+    <div class="cx-terminal-wrap" id="workflow-terminal" style="display: none; margin-top: 14px; margin-bottom: 0px;">
+      <div class="cx-terminal-bar">
+        <div class="tb-dot r"></div><div class="tb-dot y"></div><div class="tb-dot g"></div>
+        <div class="tb-name">RECON_WORKFLOW.log</div>
+      </div>
+      <div class="cx-terminal-body" id="workflow-output"></div>
+    </div>
+  </div>
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="cx-bottom-nav">
+  <a href="index.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>HOME</a>
+  <a href="learn.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>LEARN</a>
+  <button class="cx-nav-item" id="nav-tools-btn"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>TOOLS</button>
+  <a href="ai-chat.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI</a>
+  <button class="cx-nav-item active" id="nav-more-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>MORE</button>
+</nav>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script src="js/hud.js"></script>
+<script>
+// Filter tool cards based on category chip
+function filterCategory(cat, el) {
+  document.querySelectorAll('#osint-chips .cx-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  
+  const cards = document.querySelectorAll('.tools-grid .cx-card');
+  cards.forEach(card => {
+    const cardCat = card.getAttribute('data-category');
+    if (cat === 'ALL' || cardCat === cat) {
+      card.style.display = 'block';
+      card.classList.add('vis'); // avoid scroll reveal visibility issue
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+
+// Show dynamic how-to guide via askGroq()
+async function showHowToUse(toolName) {
+  const termEl = document.getElementById('guide-terminal');
+  const outputEl = document.getElementById('guide-output');
+  const titleEl = document.getElementById('guide-terminal-title');
+  
+  termEl.style.display = 'block';
+  termEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  
+  titleEl.textContent = `${toolName.toLowerCase().replace(/[^a-z0-9]/g, '_')}_guide.log`;
+  outputEl.innerHTML = `<span class="t-g">&gt; INITIATING GUIDE GENERATOR FOR: ${toolName}...</span>\n<span class="t-d">&gt; Querying ethical recon guidelines database...</span>`;
+  
+  try {
+    const prompt = `Provide a concise, step-by-step how-to guide for ethical, authorized penetration testing use of the OSINT tool: ${toolName}. Include common use cases and what results to expect. Keep it technical and under 200 words.`;
+    const responseText = await askGroq(prompt);
+    outputEl.innerHTML = `<span class="t-g">&gt; ETHICAL USAGE DOCUMENTATION LOADED:</span>\n\n<span class="t-w">${escapeHTML(responseText)}</span>`;
+    
+    // Track unique tools analyzed
+    try {
+      let tools = JSON.parse(localStorage.getItem('cx_analyzed_tools') || '[]');
+      if(!tools.includes(toolName)){
+        tools.push(toolName);
+        localStorage.setItem('cx_analyzed_tools', JSON.stringify(tools));
+        const s = Stats.get();
+        s['tools_analyzed'] = tools.length;
+        Stats.set(s);
+      }
+    } catch(_) {}
+  } catch (e) {
+    outputEl.innerHTML = `<span class="t-r">[Documentation Fetch Failed]: ${escapeHTML(e.message)}</span>`;
+  }
+}
+
+// Generate dorks via askGroq()
+async function generateDorks() {
+  const targetEl = document.getElementById('dork-target');
+  const termEl = document.getElementById('dorks-terminal');
+  const outputEl = document.getElementById('dorks-output');
+  const btn = document.getElementById('dork-btn');
+  
+  const val = targetEl.value.trim();
+  if (!val) {
+    termEl.style.display = 'block';
+    outputEl.innerHTML = '<span class="t-r">[ERROR] Target type is empty. Please enter a target.</span>';
+    return;
+  }
+  
+  termEl.style.display = 'block';
+  outputEl.innerHTML = '<span class="t-g">&gt; INITIALIZING DORK SYNTAX PARSER...</span>\n<span class="t-d">&gt; Querying dork syntax patterns...</span>';
+  
+  const oldText = btn.textContent;
+  btn.textContent = '...';
+  btn.disabled = true;
+  
+  try {
+    const prompt = `Give me 6-8 Google Dork queries for educational/authorized penetration testing purposes targeted at discovering: ${val}. Format each dork clearly on a new line inside a code block, with a brief one-line explanation of what it does. Keep it professional and under 250 words.`;
+    const responseText = await askGroq(prompt);
+    outputEl.innerHTML = `<span class="t-g">&gt; DORKS GENERATION COMPLETE:</span>\n\n<span class="t-w">${escapeHTML(responseText)}</span>`;
+  } catch (e) {
+    outputEl.innerHTML = `<span class="t-r">[Dorks Generation Failed]: ${escapeHTML(e.message)}</span>`;
+  }
+  
+  btn.textContent = oldText;
+  btn.disabled = false;
+}
+
+// Generate workflow via askGroq()
+async function generateWorkflow() {
+  const termEl = document.getElementById('workflow-terminal');
+  const outputEl = document.getElementById('workflow-output');
+  const btn = document.getElementById('workflow-btn');
+  
+  termEl.style.display = 'block';
+  termEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  
+  outputEl.innerHTML = `<span class="t-g">&gt; INITIATING WORKFLOW PROCESSOR MODULE...</span>\n<span class="t-d">&gt; Structuring reconnaissance steps...</span>`;
+  
+  const oldText = btn.innerHTML;
+  btn.innerHTML = '⚙️ COMPILING WORKFLOW...';
+  btn.disabled = true;
+  
+  try {
+    const prompt = `Give me a step-by-step OSINT reconnaissance workflow for an authorized penetration test. Include which tools to use at each step, what information to gather, and how to document findings. Under 350 words. Keep hacker style.`;
+    const responseText = await askGroq(prompt);
+    outputEl.innerHTML = `<span class="t-g">&gt; WORKFLOW COMPILED SUCCESSFULLY:</span>\n\n<span class="t-w">${escapeHTML(responseText)}</span>`;
+  } catch (e) {
+    outputEl.innerHTML = `<span class="t-r">[Workflow Generation Failure]: ${escapeHTML(e.message)}</span>`;
+  }
+  
+  btn.innerHTML = oldText;
+  btn.disabled = false;
+}
+
+function escapeHTML(str) {
+  return str.replace(/[&<>'"]/g, 
+    tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag)
+  );
+}
+
+// Initialize IntersectionObserver for scroll animations
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.IntersectionObserver) {
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('vis');
+            obs.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.08 });
+      document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    } else {
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('vis'));
+    }
+  });
+} else {
+  if (window.IntersectionObserver) {
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('vis');
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+  } else {
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('vis'));
+  }
+}
+</script>
+
+<!-- ══════════════ NAVIGATION POPUPS ══════════════ -->
+<style>
+.cx-nav-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 4, 10, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.cx-nav-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.cx-nav-popup {
+  width: 100%;
+  max-width: 500px;
+  background: rgba(0, 4, 10, 0.95);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  border-bottom: none;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  box-shadow: 0 -10px 40px rgba(0, 229, 255, 0.2);
+  padding: 20px 16px 30px;
+  box-sizing: border-box;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cx-nav-overlay.active .cx-nav-popup {
+  transform: translateY(0);
+}
+.cx-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+  padding-bottom: 10px;
+}
+.cx-popup-header span {
+  font-family: var(--hud, 'Orbitron', monospace);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--b, #00e5ff);
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
+}
+.cx-popup-close {
+  background: transparent;
+  border: none;
+  color: rgba(0, 229, 255, 0.5);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0 6px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.cx-popup-close:hover {
+  color: var(--r, #ff003c);
+}
+.cx-popup-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cx-popup-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(0, 229, 255, 0.02);
+  border: 1px solid rgba(0, 229, 255, 0.08);
+  border-radius: 4px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.cx-popup-item:hover {
+  background: rgba(0, 229, 255, 0.08);
+  border-color: var(--b, #00e5ff);
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
+}
+.cx-popup-icon {
+  font-size: 22px;
+}
+.cx-popup-text {
+  display: flex;
+  flex-direction: column;
+}
+.cx-popup-title {
+  font-family: var(--hud, 'Orbitron', monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--b, #00e5ff);
+}
+.cx-popup-desc {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+.cx-popup-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media (max-width: 420px) {
+  .cx-popup-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.cx-popup-grid-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 6px;
+  background: rgba(0, 255, 65, 0.02);
+  border: 1px solid rgba(0, 255, 65, 0.08);
+  border-radius: 4px;
+  text-decoration: none;
+  transition: all 0.2s;
+  text-align: center;
+}
+.cx-popup-grid-item:hover {
+  background: rgba(0, 255, 65, 0.08);
+  border-color: var(--g, #00ff41);
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.15);
+}
+.cx-popup-grid-icon {
+  font-size: 22px;
+}
+.cx-popup-grid-name {
+  font-family: var(--hud, 'Orbitron', monospace);
+  font-size: 8px;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+</style>
+
+<div class="cx-nav-overlay" id="cx-tools-overlay">
+  <div class="cx-nav-popup" id="cx-tools-popup">
+    <div class="cx-popup-header">
+      <span>// TOOLS ENGINE</span>
+      <button class="cx-popup-close" id="cx-tools-close">&times;</button>
+    </div>
+    <div class="cx-popup-list">
+      <a href="tools.html" class="cx-popup-item">
+        <span class="cx-popup-icon">🔧</span>
+        <div class="cx-popup-text">
+          <span class="cx-popup-title">TOOL ANALYZER</span>
+          <span class="cx-popup-desc">Deep dive into Nmap, Burp, Metasploit</span>
+        </div>
+      </a>
+      <a href="commands.html" class="cx-popup-item">
+        <span class="cx-popup-icon">💻</span>
+        <div class="cx-popup-text">
+          <span class="cx-popup-title">KALI COMMANDS</span>
+          <span class="cx-popup-desc">Quick terminal commands reference</span>
+        </div>
+      </a>
+      <a href="osint.html" class="cx-popup-item">
+        <span class="cx-popup-icon">🔍</span>
+        <div class="cx-popup-text">
+          <span class="cx-popup-title">OSINT TOOLKIT</span>
+          <span class="cx-popup-desc">Domain, email, IP and image forensics</span>
+        </div>
+      </a>
+      <a href="ports.html" class="cx-popup-item">
+        <span class="cx-popup-icon">🔌</span>
+        <div class="cx-popup-text">
+          <span class="cx-popup-title">PORT REFERENCE</span>
+          <span class="cx-popup-desc">Protocol registry & CEH exam mode</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="cx-nav-overlay" id="cx-more-overlay">
+  <div class="cx-nav-popup" id="cx-more-popup">
+    <div class="cx-popup-header">
+      <span>// MORE MODULES</span>
+      <button class="cx-popup-close" id="cx-more-close">&times;</button>
+    </div>
+    <div class="cx-popup-grid">
+      <a href="attacks.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">💀</span>
+        <span class="cx-popup-grid-name">ATTACKS</span>
+      </a>
+      <a href="roadmap.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">🗺️</span>
+        <span class="cx-popup-grid-name">ROADMAP</span>
+      </a>
+      <a href="notes.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">📝</span>
+        <span class="cx-popup-grid-name">NOTES</span>
+      </a>
+      <a href="ctf.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">🏴</span>
+        <span class="cx-popup-grid-name">CTF HELPER</span>
+      </a>
+      <a href="quiz.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">🎯</span>
+        <span class="cx-popup-grid-name">QUIZ</span>
+      </a>
+      <a href="index.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">📊</span>
+        <span class="cx-popup-grid-name">PROGRESS</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const toolsBtn = document.getElementById('nav-tools-btn');
+  const moreBtn = document.getElementById('nav-more-btn');
+  const toolsOverlay = document.getElementById('cx-tools-overlay');
+  const moreOverlay = document.getElementById('cx-more-overlay');
+  const toolsClose = document.getElementById('cx-tools-close');
+  const moreClose = document.getElementById('cx-more-close');
+
+  function openPopup(overlay) {
+    overlay.style.display = 'flex';
+    overlay.offsetHeight;
+    overlay.classList.add('active');
+  }
+
+  function closePopup(overlay) {
+    overlay.classList.remove('active');
+    setTimeout(() => {
+      if (!overlay.classList.contains('active')) {
+        overlay.style.display = 'none';
+      }
+    }, 250);
+  }
+
+  if (toolsBtn && toolsOverlay) {
+    toolsBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openPopup(toolsOverlay);
+      closePopup(moreOverlay);
+    });
+  }
+  if (moreBtn && moreOverlay) {
+    moreBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openPopup(moreOverlay);
+      closePopup(toolsOverlay);
+    });
+  }
+  if (toolsClose && toolsOverlay) {
+    toolsClose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closePopup(toolsOverlay);
+    });
+  }
+  if (moreClose && moreOverlay) {
+    moreClose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closePopup(moreOverlay);
+    });
+  }
+
+  window.addEventListener('click', (e) => {
+    if (toolsOverlay && e.target === toolsOverlay) {
+      closePopup(toolsOverlay);
+    }
+    if (moreOverlay && e.target === moreOverlay) {
+      closePopup(moreOverlay);
+    }
+  });
+})();
+</script>
+</body>
+</html>

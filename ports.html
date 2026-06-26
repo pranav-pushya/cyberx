@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>CyberX — Port Reference</title>
+<link rel="stylesheet" href="css/style.css"/>
+<style>
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 38px;
+  height: 20px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 229, 255, 0.1);
+  border: 1px solid var(--border2);
+  transition: .3s;
+  border-radius: 10px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 12px; width: 12px;
+  left: 3px; bottom: 3px;
+  background-color: var(--b);
+  transition: .3s;
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--b);
+}
+input:checked + .slider {
+  background-color: rgba(0, 255, 65, 0.1);
+  border-color: var(--g);
+}
+input:checked + .slider:before {
+  transform: translateX(18px);
+  background-color: var(--g);
+  box-shadow: 0 0 6px var(--g);
+}
+
+.port-card {
+  margin-bottom: 14px;
+  border-left-width: 3px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.port-card-main {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+.port-num-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 76px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 229, 255, 0.05);
+  border-radius: 3px;
+}
+.port-num {
+  font-family: var(--hud);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--b);
+}
+.port-card.green .port-num { color: var(--g); text-shadow: 0 0 6px rgba(0, 255, 65, 0.2); }
+.port-card.red .port-num { color: var(--r); text-shadow: 0 0 6px rgba(255, 0, 60, 0.2); }
+.port-card.yellow .port-num { color: var(--y); text-shadow: 0 0 6px rgba(255, 215, 0, 0.2); }
+
+.port-transport {
+  font-size: 8.5px;
+  color: var(--textdim);
+  margin-top: 4px;
+  letter-spacing: 1px;
+}
+.port-details-col {
+  flex: 1;
+}
+.port-proto-name {
+  font-family: var(--hud);
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #fff;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.port-osi {
+  font-size: 8.5px;
+  color: var(--textdim);
+  border: 1px solid rgba(0, 229, 255, 0.08);
+  padding: 1px 6px;
+  border-radius: 2px;
+  background: rgba(0, 229, 255, 0.02);
+}
+.port-desc {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 6px;
+}
+.port-attacks {
+  font-size: 10.5px;
+  color: var(--textdim);
+}
+.port-badge-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+  min-width: 100px;
+}
+.port-badge {
+  font-size: 8px;
+  letter-spacing: 1px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.port-badge.green {
+  background: rgba(0, 255, 65, 0.07);
+  color: var(--g);
+  border: 1px solid rgba(0, 255, 65, 0.2);
+}
+.port-badge.red {
+  background: rgba(255, 0, 60, 0.07);
+  color: var(--r);
+  border: 1px solid rgba(255, 0, 60, 0.2);
+}
+.port-badge.yellow {
+  background: rgba(255, 215, 0, 0.07);
+  color: var(--y);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+}
+.ceh-target-badge {
+  font-size: 8px;
+  background: rgba(191, 0, 255, 0.08);
+  color: var(--p);
+  border: 1px solid rgba(191, 0, 255, 0.25);
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.port-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid rgba(0, 229, 255, 0.04);
+  padding-top: 8px;
+}
+.port-card-actions .cx-btn {
+  width: auto;
+  padding: 5px 12px;
+  font-size: 10px;
+  margin-bottom: 0;
+}
+.port-ai-dive {
+  margin-top: 12px;
+}
+.port-ai-dive .cx-terminal-body {
+  min-height: 80px;
+  max-height: 240px;
+}
+
+.port-card.lookup-highlight {
+  border-color: var(--b) !important;
+  background: rgba(0, 229, 255, 0.08) !important;
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.3) !important;
+  transform: translateY(-2px);
+}
+
+/* CEH Highlight Mode */
+body.ceh-highlight-active .port-card:not([data-ceh="true"]) {
+  opacity: 0.18;
+  filter: grayscale(70%);
+}
+body.ceh-highlight-active .port-card[data-ceh="true"] {
+  border-color: var(--p) !important;
+  box-shadow: 0 0 14px rgba(191, 0, 255, 0.25);
+}
+body.ceh-highlight-active .port-card[data-ceh="true"]::before {
+  background: linear-gradient(90deg, var(--p), transparent);
+}
+
+@media(max-width: 580px) {
+  .port-card-main {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .port-num-col {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 6px 12px;
+  }
+  .port-transport {
+    margin-top: 0;
+  }
+  .port-badge-col {
+    width: 100%;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 8px;
+  }
+}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="scanlines"></div><div class="vignette"></div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <div class="sb-logo">CYBER<span>X</span></div>
+  <div class="sb-item"><div class="sb-dot g"></div>SECURE</div>
+  <div class="sb-item"><div class="sb-dot b"></div>PORT LOOKUP</div>
+  <div class="sb-item"><div class="sb-dot" style="background:#bf00ff;box-shadow:0 0 6px #bf00ff;"></div>DATABASE</div>
+  <div class="sb-clock" id="sb-clock">00:00:00</div>
+  <div class="sb-page">PORTS</div>
+</div>
+
+<div class="cx-tl"></div><div class="cx-tr"></div><div class="cx-bl"></div><div class="cx-br"></div>
+<div class="hud-panel tl">
+  <div class="hud-label">DATABASE</div>
+  <div>PORTS <span class="hud-val g" id="hud-port-count">--</span></div>
+  <div>ACTIVE <span class="hud-val g" id="hud-active-count">--</span></div>
+  <div>MODE <span class="hud-val p" id="hud-mode">STANDARD</span></div>
+</div>
+<div class="mini-radar-wrap"><canvas id="mini-radar" width="70" height="70"></canvas></div>
+<div class="wave-bars wl" data-bars="14"></div>
+<div class="wave-bars wr" data-bars="14"></div>
+
+<main class="cx-page">
+  <div class="page-header">
+    <div class="page-header-icon">🔌</div>
+    <div>
+      <div class="page-header-title">PORT REFERENCE</div>
+      <div class="page-header-sub">// PROTOCOL & PORT QUICK LOOKUP</div>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="reveal" style="margin-bottom:14px;">
+    <input type="text" id="port-search" class="cx-input" placeholder="search port number, protocol name, or service..." oninput="filterPorts()" autocomplete="off" autocorrect="off" spellcheck="false">
+  </div>
+
+  <!-- CEH Mode Toggle -->
+  <div class="reveal" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;background:rgba(191,0,255,0.02);border:1px solid rgba(191,0,255,0.15);padding:10px 14px;border-radius:2px;">
+    <span style="font-size:11px;letter-spacing:1px;color:rgba(191,0,255,0.7);font-weight:bold;">🎯 CEH EXAM TARGET MODE</span>
+    <label class="switch">
+      <input type="checkbox" id="ceh-mode" onchange="toggleCehMode()">
+      <span class="slider" style="background-color:rgba(191,0,255,0.05);border-color:rgba(191,0,255,0.18);"></span>
+    </label>
+  </div>
+
+  <div class="cx-scan">&gt; CATEGORIES</div>
+  <!-- Category Chips -->
+  <div class="cx-chips reveal" id="category-chips">
+    <span class="cx-chip active" onclick="setCategory('ALL', this)">ALL</span>
+    <span class="cx-chip" onclick="setCategory('WEB', this)">WEB</span>
+    <span class="cx-chip" onclick="setCategory('EMAIL', this)">EMAIL</span>
+    <span class="cx-chip" onclick="setCategory('REMOTE', this)">REMOTE</span>
+    <span class="cx-chip" onclick="setCategory('DATABASE', this)">DATABASE</span>
+    <span class="cx-chip" onclick="setCategory('FILE', this)">FILE</span>
+    <span class="cx-chip" onclick="setCategory('WINDOWS', this)">WINDOWS</span>
+    <span class="cx-chip" onclick="setCategory('NETWORK', this)">NETWORK</span>
+  </div>
+
+  <div class="cx-scan">&gt; PROTOCOL REGISTRY</div>
+  <!-- Ports Container -->
+  <div id="ports-list"></div>
+</main>
+
+<nav class="cx-bottom-nav">
+  <a href="index.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>HOME</a>
+  <a href="learn.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>LEARN</a>
+  <button class="cx-nav-item" id="nav-tools-btn"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>TOOLS</button>
+  <a href="ai-chat.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI</a>
+  <button class="cx-nav-item active" id="nav-more-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>MORE</button>
+</nav>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script src="js/hud.js"></script>
+<script>
+// Static database
+const portsDb = [
+  {
+    port: 21,
+    service: "FTP",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "File Transfer Protocol - Used for transferring files between client and server.",
+    attacks: "Anonymous login, bounce attack, cleartext credential sniffing, brute force.",
+    color: "yellow",
+    ceh: true,
+    cat: "FILE"
+  },
+  {
+    port: 22,
+    service: "SSH",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "Secure Shell - Used for secure remote shell access and command execution.",
+    attacks: "Brute force, credential stuffing, SSH key theft, exploitation of outdated daemons.",
+    color: "green",
+    ceh: true,
+    cat: "REMOTE"
+  },
+  {
+    port: 23,
+    service: "Telnet",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "Telnet - Unencrypted remote shell access protocol.",
+    attacks: "Credential sniffing (cleartext data), credential brute force, session hijacking.",
+    color: "red",
+    ceh: true,
+    cat: "REMOTE"
+  },
+  {
+    port: 25,
+    service: "SMTP",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "Simple Mail Transfer Protocol - Used for sending/routing email messages.",
+    attacks: "User enumeration (VRFY/EXPN), open relay exploitation, spamming, mail spoofing.",
+    color: "yellow",
+    ceh: true,
+    cat: "EMAIL"
+  },
+  {
+    port: 53,
+    service: "DNS",
+    transport: "TCP/UDP",
+    layer: "L7 Application",
+    desc: "Domain Name System - Resolves domain names to IP addresses.",
+    attacks: "DNS zone transfer (AXFR), cache poisoning, DNS amplification DDoS, spoofing.",
+    color: "yellow",
+    ceh: true,
+    cat: "NETWORK"
+  },
+  {
+    port: 67,
+    service: "DHCP Server",
+    transport: "UDP",
+    layer: "L7 Application",
+    desc: "Dynamic Host Configuration Protocol - Dynamically assigns IP addresses to clients.",
+    attacks: "DHCP starvation, rogue DHCP server (Man-in-the-Middle).",
+    color: "yellow",
+    ceh: true,
+    cat: "NETWORK"
+  },
+  {
+    port: 68,
+    service: "DHCP Client",
+    transport: "UDP",
+    layer: "L7 Application",
+    desc: "Dynamic Host Configuration Protocol - Client-side port to receive IP details.",
+    attacks: "DHCP spoofing, rogue server attacks.",
+    color: "yellow",
+    ceh: false,
+    cat: "NETWORK"
+  },
+  {
+    port: 80,
+    service: "HTTP",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "Hypertext Transfer Protocol - Standard for unencrypted web page transfer.",
+    attacks: "SQL injection, Cross-Site Scripting (XSS), session hijacking, cleartext sniffing.",
+    color: "red",
+    ceh: true,
+    cat: "WEB"
+  },
+  {
+    port: 88,
+    service: "Kerberos",
+    transport: "TCP/UDP",
+    layer: "L7 Application",
+    desc: "Kerberos authentication system - Key Distribution Center (KDC) in Windows AD.",
+    attacks: "Kerberoasting, AS-REP roasting, golden/silver ticket attacks, brute force.",
+    color: "yellow",
+    ceh: true,
+    cat: "WINDOWS"
+  },
+  {
+    port: 110,
+    service: "POP3",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "Post Office Protocol v3 - Used by email clients to retrieve messages.",
+    attacks: "Cleartext credential sniffing, brute force.",
+    color: "red",
+    ceh: true,
+    cat: "EMAIL"
+  },
+  {
+    port: 143,
+    service: "IMAP",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "Internet Message Access Protocol - Accesses email on a mail server.",
+    attacks: "Credential sniffing, authentication bypass, brute force.",
+    color: "yellow",
+    ceh: false,
+    cat: "EMAIL"
+  },
+  {
+    port: 161,
+    service: "SNMP",
+    transport: "UDP",
+    layer: "L7 Application",
+    desc: "Simple Network Management Protocol - Used for monitoring and managing devices.",
+    attacks: "Community string guessing (public/private), system information leakage, config manipulation.",
+    color: "red",
+    ceh: true,
+    cat: "NETWORK"
+  },
+  {
+    port: 389,
+    service: "LDAP",
+    transport: "TCP/UDP",
+    layer: "L7 Application",
+    desc: "Lightweight Directory Access Protocol - Directory lookup services.",
+    attacks: "LDAP injection, anonymous binding exploitation, cleartext credential sniffing.",
+    color: "yellow",
+    ceh: true,
+    cat: "NETWORK"
+  },
+  {
+    port: 443,
+    service: "HTTPS",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "Hypertext Transfer Protocol Secure - Encrypted web traffic over SSL/TLS.",
+    attacks: "Web application attacks, SSL/TLS vulnerability exploits (Heartbleed, POODLE).",
+    color: "green",
+    ceh: true,
+    cat: "WEB"
+  },
+  {
+    port: 445,
+    service: "SMB",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "Server Message Block - Windows file sharing and IPC resource access.",
+    attacks: "EternalBlue (MS17-010), null sessions, SMB relay attacks, credential harvesting.",
+    color: "red",
+    ceh: true,
+    cat: "WINDOWS"
+  },
+  {
+    port: 636,
+    service: "LDAPS",
+    transport: "TCP/UDP",
+    layer: "L7 Application",
+    desc: "Lightweight Directory Access Protocol Secure - Encrypted LDAP directory services.",
+    attacks: "LDAP injection, service exhaustion, misconfiguration bypasses.",
+    color: "green",
+    ceh: false,
+    cat: "NETWORK"
+  },
+  {
+    port: 1433,
+    service: "MSSQL",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "Microsoft SQL Server database management system.",
+    attacks: "Brute force, SQL injection, execution of xp_cmdshell for OS command execution.",
+    color: "yellow",
+    ceh: true,
+    cat: "DATABASE"
+  },
+  {
+    port: 1521,
+    service: "Oracle DB",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "Oracle Database listener service.",
+    attacks: "SID brute forcing, TNS poisoning, privilege escalation exploits.",
+    color: "yellow",
+    ceh: true,
+    cat: "DATABASE"
+  },
+  {
+    port: 3306,
+    service: "MySQL",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "MySQL open-source relational database management system.",
+    attacks: "Brute force, privilege escalation, unauthorized remote access, SQLi data exfiltration.",
+    color: "yellow",
+    ceh: true,
+    cat: "DATABASE"
+  },
+  {
+    port: 3389,
+    service: "RDP",
+    transport: "TCP/UDP",
+    layer: "L7 Application",
+    desc: "Remote Desktop Protocol - Graphical interface to connect to another computer.",
+    attacks: "BlueKeep (CVE-2019-0708), brute force, credential stuffing, session hijacking.",
+    color: "red",
+    ceh: true,
+    cat: "REMOTE"
+  },
+  // Additional 22 common/CEH ports
+  {
+    port: 20,
+    service: "FTP Data",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "FTP data transfer port (default channel for transmitting files).",
+    attacks: "Sniffing file transfer payloads, data hijacking.",
+    color: "yellow",
+    ceh: false,
+    cat: "FILE"
+  },
+  {
+    port: 79,
+    service: "Finger",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "Finger user information protocol - retrieves details about users on a system.",
+    attacks: "User enumeration, footprinting and info gathering.",
+    color: "red",
+    ceh: true,
+    cat: "NETWORK"
+  },
+  {
+    port: 123,
+    service: "NTP",
+    transport: "UDP",
+    layer: "L7 Application",
+    desc: "Network Time Protocol - Used for clock synchronization across networks.",
+    attacks: "NTP amplification DDoS attacks, time modification.",
+    color: "green",
+    ceh: true,
+    cat: "NETWORK"
+  },
+  {
+    port: 135,
+    service: "RPC Endpoint Mapper",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "Microsoft RPC Endpoint Mapper - Coordinates RPC communication.",
+    attacks: "RPC service enumeration, buffer overflows.",
+    color: "red",
+    ceh: true,
+    cat: "WINDOWS"
+  },
+  {
+    port: 137,
+    service: "NetBIOS Name Service",
+    transport: "UDP",
+    layer: "L7 Application",
+    desc: "NetBIOS Name Service - Resolves hostnames on local subnet.",
+    attacks: "NBNS spoofing, user/group enumeration.",
+    color: "red",
+    ceh: true,
+    cat: "WINDOWS"
+  },
+  {
+    port: 138,
+    service: "NetBIOS Datagram",
+    transport: "UDP",
+    layer: "L7 Application",
+    desc: "NetBIOS Datagram Service - Handles connectionless browser/lookup traffic.",
+    attacks: "Sniffing local subnet data.",
+    color: "yellow",
+    ceh: false,
+    cat: "WINDOWS"
+  },
+  {
+    port: 139,
+    service: "NetBIOS Session",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "NetBIOS Session Service - Standard Windows file sharing protocol pre-SMB.",
+    attacks: "Null session connections, resource enumeration.",
+    color: "red",
+    ceh: true,
+    cat: "WINDOWS"
+  },
+  {
+    port: 162,
+    service: "SNMP Trap",
+    transport: "UDP",
+    layer: "L7 Application",
+    desc: "SNMP Trap receiver port - Listens for unsolicited alerts/notices.",
+    attacks: "Spoofed trap alerts, denial of service.",
+    color: "yellow",
+    ceh: false,
+    cat: "NETWORK"
+  },
+  {
+    port: 500,
+    service: "ISAKMP / IKE",
+    transport: "UDP",
+    layer: "L5 Session",
+    desc: "Internet Security Association and Key Management Protocol - Setup for IPsec VPNs.",
+    attacks: "Aggressive mode IKE pre-shared key hashing (PSK crack), DoS.",
+    color: "green",
+    ceh: true,
+    cat: "NETWORK"
+  },
+  {
+    port: 514,
+    service: "Syslog",
+    transport: "UDP",
+    layer: "L7 Application",
+    desc: "Syslog protocol - Sends event logging data to central collector.",
+    attacks: "Log message injection, log denial of service, unencrypted sniffing.",
+    color: "yellow",
+    ceh: false,
+    cat: "NETWORK"
+  },
+  {
+    port: 587,
+    service: "SMTP Secure",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "SMTP client submission port - Encrypted email routing via TLS.",
+    attacks: "Brute force credentials, relay attacks.",
+    color: "green",
+    ceh: false,
+    cat: "EMAIL"
+  },
+  {
+    port: 993,
+    service: "IMAPS",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "Internet Message Access Protocol Secure - Encrypted IMAP traffic.",
+    attacks: "TLS vulnerability exploits, brute force.",
+    color: "green",
+    ceh: false,
+    cat: "EMAIL"
+  },
+  {
+    port: 995,
+    service: "POP3S",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "Post Office Protocol v3 Secure - Encrypted POP3 traffic.",
+    attacks: "TLS vulnerability exploits, brute force.",
+    color: "green",
+    ceh: false,
+    cat: "EMAIL"
+  },
+  {
+    port: 1723,
+    service: "PPTP",
+    transport: "TCP",
+    layer: "L5 Session",
+    desc: "Point-to-Point Tunneling Protocol - Legacy VPN tunneling protocol.",
+    attacks: "MS-CHAPv2 credential authentication bypass and cryptanalysis.",
+    color: "red",
+    ceh: false,
+    cat: "NETWORK"
+  },
+  {
+    port: 2049,
+    service: "NFS",
+    transport: "TCP/UDP",
+    layer: "L7 Application",
+    desc: "Network File System - Protocol for mounting remote directories.",
+    attacks: "Unauthorized share mount, arbitrary file retrieval, permission bypass.",
+    color: "red",
+    ceh: true,
+    cat: "FILE"
+  },
+  {
+    port: 4500,
+    service: "IPsec NAT-T",
+    transport: "UDP",
+    layer: "L5 Session",
+    desc: "IPsec NAT Traversal - Encapsulates IPsec packets inside UDP for NAT traversal.",
+    attacks: "Replay attacks, traffic interception.",
+    color: "green",
+    ceh: false,
+    cat: "NETWORK"
+  },
+  {
+    port: 5060,
+    service: "SIP",
+    transport: "TCP/UDP",
+    layer: "L7 Application",
+    desc: "Session Initiation Protocol - Handles VoIP and media signaling.",
+    attacks: "SIP caller ID spoofing, toll fraud, eavesdropping, registration hijacking.",
+    color: "yellow",
+    ceh: false,
+    cat: "NETWORK"
+  },
+  {
+    port: 5061,
+    service: "SIP Secure",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "Session Initiation Protocol Secure - Signaling encrypted via TLS.",
+    attacks: "VoIP denial of service, TLS negotiation attacks.",
+    color: "green",
+    ceh: false,
+    cat: "NETWORK"
+  },
+  {
+    port: 5432,
+    service: "PostgreSQL",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "PostgreSQL relational database management system.",
+    attacks: "Brute force, privilege escalation, unauthenticated connection attempts.",
+    color: "yellow",
+    ceh: false,
+    cat: "DATABASE"
+  },
+  {
+    port: 5900,
+    service: "VNC",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "Virtual Network Computing - Unencrypted remote desktop protocol.",
+    attacks: "Eavesdropping, weak password authentication bypasses, brute force.",
+    color: "red",
+    ceh: true,
+    cat: "REMOTE"
+  },
+  {
+    port: 8080,
+    service: "HTTP Alternate",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "HTTP Alternate - Commonly used for Tomcat, Jenkins, and proxy servers.",
+    attacks: "Admin panel brute force, default credentials exploitation (e.g. manager/manager).",
+    color: "yellow",
+    ceh: true,
+    cat: "WEB"
+  },
+  {
+    port: 8443,
+    service: "HTTPS Alternate",
+    transport: "TCP",
+    layer: "L7 Application",
+    desc: "HTTPS Alternate - SSL/TLS web administration consoles.",
+    attacks: "Vulnerable web consoles exploitation, brute force.",
+    color: "green",
+    ceh: false,
+    cat: "WEB"
+  }
+];
+
+let selectedCategory = 'ALL';
+
+// Initialize list
+function renderPorts() {
+  const container = document.getElementById('ports-list');
+  container.innerHTML = '';
+  
+  // Sort ports numerically
+  const sortedPorts = [...portsDb].sort((a,b) => a.port - b.port);
+  
+  sortedPorts.forEach(p => {
+    const card = document.createElement('div');
+    card.className = `port-card cx-card ${p.color} reveal`;
+    card.dataset.port = p.port;
+    card.dataset.proto = p.service;
+    card.dataset.cat = p.cat;
+    card.dataset.ceh = p.ceh;
+    
+    card.innerHTML = `
+      <div class="port-card-main">
+        <div class="port-num-col">
+          <div class="port-num">${p.port}</div>
+          <div class="port-transport">${p.transport}</div>
+        </div>
+        <div class="port-details-col">
+          <div class="port-proto-name">
+            ${p.service}
+            <span class="port-osi">${p.layer}</span>
+          </div>
+          <div class="port-desc">${p.desc}</div>
+          <div class="port-attacks"><span class="t-r">ATTACKS:</span> ${p.attacks}</div>
+        </div>
+        <div class="port-badge-col">
+          <span class="port-badge ${p.color}">${p.color === 'green' ? 'SAFE' : p.color === 'red' ? 'RISKY' : 'DEPENDS'}</span>
+          <span class="ceh-target-badge" style="${p.ceh ? 'display:block;' : 'display:none;'}">CEH EXAM</span>
+        </div>
+      </div>
+      <div class="port-card-actions">
+        <button class="cx-btn" style="border-color:rgba(0,255,65,.3);color:rgba(0,255,65,.6);" onclick="getDeepDive(${p.port}, '${p.service}', this)">🤖 AI DEEP DIVE</button>
+      </div>
+      <div class="port-ai-dive cx-terminal-wrap" style="display:none;">
+        <div class="cx-terminal-bar">
+          <div class="tb-dot r"></div><div class="tb-dot y"></div><div class="tb-dot g"></div>
+          <div class="tb-name">AI PORT INTELLIGENCE // PORT ${p.port}</div>
+        </div>
+        <div class="cx-terminal-body cx-output"></div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+  
+  // Update HUD statistics
+  document.getElementById('hud-port-count').textContent = portsDb.length;
+  updateActiveCount();
+}
+
+function updateActiveCount() {
+  const visibleCards = document.querySelectorAll('.port-card[style*="display: block"], .port-card:not([style*="display: none"])');
+  document.getElementById('hud-active-count').textContent = visibleCards.length;
+}
+
+// Category filter
+function setCategory(cat, chipEl) {
+  selectedCategory = cat;
+  document.querySelectorAll('#category-chips .cx-chip').forEach(c => c.classList.remove('active'));
+  chipEl.classList.add('active');
+  filterPorts();
+}
+
+// CEH Mode Toggle
+function toggleCehMode() {
+  const isChecked = document.getElementById('ceh-mode').checked;
+  const body = document.body;
+  if (isChecked) {
+    body.classList.add('ceh-highlight-active');
+    document.getElementById('hud-mode').textContent = 'CEH TARGET';
+    document.getElementById('hud-mode').className = 'hud-val r';
+  } else {
+    body.classList.remove('ceh-highlight-active');
+    document.getElementById('hud-mode').textContent = 'STANDARD';
+    document.getElementById('hud-mode').className = 'hud-val p';
+  }
+  filterPorts();
+}
+
+// Search and filter logic
+function filterPorts() {
+  const q = document.getElementById('port-search').value.trim().toLowerCase();
+  const cehOnly = document.getElementById('ceh-mode').checked;
+  const cards = document.querySelectorAll('.port-card');
+  
+  const isNumber = /^\d+$/.test(q);
+  const lookupPort = isNumber ? parseInt(q) : null;
+  
+  cards.forEach(card => {
+    const port = parseInt(card.dataset.port);
+    const service = card.dataset.proto.toLowerCase();
+    const desc = card.querySelector('.port-desc').textContent.toLowerCase();
+    const attacks = card.querySelector('.port-attacks').textContent.toLowerCase();
+    const cat = card.dataset.cat;
+    const isCeh = card.dataset.ceh === "true";
+    
+    let matchesSearch = false;
+    if (q === '') {
+      matchesSearch = true;
+    } else if (isNumber) {
+      matchesSearch = String(port).includes(q);
+    } else {
+      matchesSearch = service.includes(q) || desc.includes(q) || attacks.includes(q);
+    }
+    
+    let matchesCategory = selectedCategory === 'ALL' || cat === selectedCategory;
+    let matchesCeh = !cehOnly || isCeh;
+    
+    if (matchesSearch && matchesCategory && matchesCeh) {
+      card.style.display = 'block';
+      card.classList.add('vis'); // bypass scroll reveal
+      
+      // Quick Lookup Match Highlight
+      if (lookupPort && port === lookupPort) {
+        card.classList.add('lookup-highlight');
+        // Scroll to card if it's the exact lookup match
+        if (port === parseInt(q)) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      } else {
+        card.classList.remove('lookup-highlight');
+      }
+    } else {
+      card.style.display = 'none';
+      card.classList.remove('lookup-highlight');
+    }
+  });
+  
+  updateActiveCount();
+}
+
+// AI deep dive query
+async function getDeepDive(portNum, protocol, btnEl) {
+  const card = btnEl.closest('.port-card');
+  const diveBlock = card.querySelector('.port-ai-dive');
+  const diveOutput = card.querySelector('.port-ai-dive .cx-output');
+  
+  if (diveBlock.style.display === 'block') {
+    diveBlock.style.display = 'none';
+    return;
+  }
+  
+  diveBlock.style.display = 'block';
+  diveOutput.className = 'cx-output loading';
+  diveOutput.textContent = `> ACCESSING SYSTEM NODE...\n> Querying CyberX Port Intelligence...\n> Target: Port ${portNum} (${protocol})...\n> Loading_`;
+  btnEl.disabled = true;
+  
+  try {
+    const prompt = `Give me a deep dive on port ${portNum} (${protocol}). Cover: what it does, why hackers target it, common vulnerabilities, how to secure it, relevant CTF/pentest techniques. Under 200 words. Keep a hacker terminal style.`;
+    const response = await askGroq(prompt);
+    diveOutput.className = 'cx-output';
+    diveOutput.textContent = response;
+  } catch (e) {
+    diveOutput.className = 'cx-output error';
+    diveOutput.textContent = `[CONNECTION ERROR] ${e.message}\n\nCheck Groq API key in js/api.js`;
+  } finally {
+    btnEl.disabled = false;
+  }
+}
+
+// Initialize registry on page load
+document.addEventListener('DOMContentLoaded', () => {
+  renderPorts();
+  
+  // Trigger animations for visible elements
+  setTimeout(() => {
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('vis'));
+  }, 100);
+});
+</script>
+
+<!-- ══════════════ NAVIGATION POPUPS ══════════════ -->
+<style>
+.cx-nav-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 4, 10, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.cx-nav-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.cx-nav-popup {
+  width: 100%;
+  max-width: 500px;
+  background: rgba(0, 4, 10, 0.95);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  border-bottom: none;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  box-shadow: 0 -10px 40px rgba(0, 229, 255, 0.2);
+  padding: 20px 16px 30px;
+  box-sizing: border-box;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cx-nav-overlay.active .cx-nav-popup {
+  transform: translateY(0);
+}
+.cx-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+  padding-bottom: 10px;
+}
+.cx-popup-header span {
+  font-family: var(--hud, 'Orbitron', monospace);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--b, #00e5ff);
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
+}
+.cx-popup-close {
+  background: transparent;
+  border: none;
+  color: rgba(0, 229, 255, 0.5);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0 6px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.cx-popup-close:hover {
+  color: var(--r, #ff003c);
+}
+.cx-popup-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cx-popup-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(0, 229, 255, 0.02);
+  border: 1px solid rgba(0, 229, 255, 0.08);
+  border-radius: 4px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.cx-popup-item:hover {
+  background: rgba(0, 229, 255, 0.08);
+  border-color: var(--b, #00e5ff);
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
+}
+.cx-popup-icon {
+  font-size: 22px;
+}
+.cx-popup-text {
+  display: flex;
+  flex-direction: column;
+}
+.cx-popup-title {
+  font-family: var(--hud, 'Orbitron', monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--b, #00e5ff);
+}
+.cx-popup-desc {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+.cx-popup-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media (max-width: 420px) {
+  .cx-popup-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.cx-popup-grid-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 6px;
+  background: rgba(0, 255, 65, 0.02);
+  border: 1px solid rgba(0, 255, 65, 0.08);
+  border-radius: 4px;
+  text-decoration: none;
+  transition: all 0.2s;
+  text-align: center;
+}
+.cx-popup-grid-item:hover {
+  background: rgba(0, 255, 65, 0.08);
+  border-color: var(--g, #00ff41);
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.15);
+}
+.cx-popup-grid-icon {
+  font-size: 22px;
+}
+.cx-popup-grid-name {
+  font-family: var(--hud, 'Orbitron', monospace);
+  font-size: 8px;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+</style>
+
+<div class="cx-nav-overlay" id="cx-tools-overlay">
+  <div class="cx-nav-popup" id="cx-tools-popup">
+    <div class="cx-popup-header">
+      <span>// TOOLS ENGINE</span>
+      <button class="cx-popup-close" id="cx-tools-close">&times;</button>
+    </div>
+    <div class="cx-popup-list">
+      <a href="tools.html" class="cx-popup-item">
+        <span class="cx-popup-icon">🔧</span>
+        <div class="cx-popup-text">
+          <span class="cx-popup-title">TOOL ANALYZER</span>
+          <span class="cx-popup-desc">Deep dive into Nmap, Burp, Metasploit</span>
+        </div>
+      </a>
+      <a href="commands.html" class="cx-popup-item">
+        <span class="cx-popup-icon">💻</span>
+        <div class="cx-popup-text">
+          <span class="cx-popup-title">KALI COMMANDS</span>
+          <span class="cx-popup-desc">Quick terminal commands reference</span>
+        </div>
+      </a>
+      <a href="osint.html" class="cx-popup-item">
+        <span class="cx-popup-icon">🔍</span>
+        <div class="cx-popup-text">
+          <span class="cx-popup-title">OSINT TOOLKIT</span>
+          <span class="cx-popup-desc">Domain, email, IP and image forensics</span>
+        </div>
+      </a>
+      <a href="ports.html" class="cx-popup-item">
+        <span class="cx-popup-icon">🔌</span>
+        <div class="cx-popup-text">
+          <span class="cx-popup-title">PORT REFERENCE</span>
+          <span class="cx-popup-desc">Protocol registry & CEH exam mode</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="cx-nav-overlay" id="cx-more-overlay">
+  <div class="cx-nav-popup" id="cx-more-popup">
+    <div class="cx-popup-header">
+      <span>// MORE MODULES</span>
+      <button class="cx-popup-close" id="cx-more-close">&times;</button>
+    </div>
+    <div class="cx-popup-grid">
+      <a href="attacks.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">💀</span>
+        <span class="cx-popup-grid-name">ATTACKS</span>
+      </a>
+      <a href="roadmap.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">🗺️</span>
+        <span class="cx-popup-grid-name">ROADMAP</span>
+      </a>
+      <a href="notes.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">📝</span>
+        <span class="cx-popup-grid-name">NOTES</span>
+      </a>
+      <a href="ctf.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">🏴</span>
+        <span class="cx-popup-grid-name">CTF HELPER</span>
+      </a>
+      <a href="quiz.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">🎯</span>
+        <span class="cx-popup-grid-name">QUIZ</span>
+      </a>
+      <a href="index.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">📊</span>
+        <span class="cx-popup-grid-name">PROGRESS</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const toolsBtn = document.getElementById('nav-tools-btn');
+  const moreBtn = document.getElementById('nav-more-btn');
+  const toolsOverlay = document.getElementById('cx-tools-overlay');
+  const moreOverlay = document.getElementById('cx-more-overlay');
+  const toolsClose = document.getElementById('cx-tools-close');
+  const moreClose = document.getElementById('cx-more-close');
+
+  function openPopup(overlay) {
+    overlay.style.display = 'flex';
+    overlay.offsetHeight;
+    overlay.classList.add('active');
+  }
+
+  function closePopup(overlay) {
+    overlay.classList.remove('active');
+    setTimeout(() => {
+      if (!overlay.classList.contains('active')) {
+        overlay.style.display = 'none';
+      }
+    }, 250);
+  }
+
+  if (toolsBtn && toolsOverlay) {
+    toolsBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openPopup(toolsOverlay);
+      closePopup(moreOverlay);
+    });
+  }
+  if (moreBtn && moreOverlay) {
+    moreBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openPopup(moreOverlay);
+      closePopup(toolsOverlay);
+    });
+  }
+  if (toolsClose && toolsOverlay) {
+    toolsClose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closePopup(toolsOverlay);
+    });
+  }
+  if (moreClose && moreOverlay) {
+    moreClose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closePopup(moreOverlay);
+    });
+  }
+
+  window.addEventListener('click', (e) => {
+    if (toolsOverlay && e.target === toolsOverlay) {
+      closePopup(toolsOverlay);
+    }
+    if (moreOverlay && e.target === moreOverlay) {
+      closePopup(moreOverlay);
+    }
+  });
+})();
+</script>
+</body>
+</html>

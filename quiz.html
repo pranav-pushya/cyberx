@@ -99,11 +99,9 @@
 <nav class="cx-bottom-nav">
   <a href="index.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>HOME</a>
   <a href="learn.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>LEARN</a>
-  <a href="roadmap.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon><line x1="9" y1="3" x2="9" y2="18"></line><line x1="15" y1="6" x2="15" y2="21"></line></svg>ROADMAP</a>
-  <a href="notes.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>NOTES</a>
-  <a href="quiz.html" class="cx-nav-item active"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>QUIZ</a>
+  <button class="cx-nav-item" id="nav-tools-btn"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>TOOLS</button>
   <a href="ai-chat.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI</a>
-  <a href="attacks.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>ATTACK</a>
+  <button class="cx-nav-item active" id="nav-more-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>MORE</button>
 </nav>
 
 <script src="js/api.js"></script><script src="js/main.js"></script><script src="js/hud.js"></script>
@@ -167,6 +165,289 @@ function checkAns(sel,btn){
 }
 
 function resetQuiz(){ score=0; total=0; correct=0; updateScore(); document.getElementById('quiz-q').textContent='[ Tap GENERATE CHALLENGE to begin ]'; document.getElementById('quiz-q').style.color='var(--y)'; document.getElementById('quiz-opts').innerHTML=''; document.getElementById('quiz-result').textContent=''; document.getElementById('next-btn').style.display='none'; }
+</script>
+
+<!-- ══════════════ NAVIGATION POPUPS ══════════════ -->
+<style>
+.cx-nav-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 4, 10, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.cx-nav-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.cx-nav-popup {
+  width: 100%;
+  max-width: 500px;
+  background: rgba(0, 4, 10, 0.95);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  border-bottom: none;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  box-shadow: 0 -10px 40px rgba(0, 229, 255, 0.2);
+  padding: 20px 16px 30px;
+  box-sizing: border-box;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cx-nav-overlay.active .cx-nav-popup {
+  transform: translateY(0);
+}
+.cx-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+  padding-bottom: 10px;
+}
+.cx-popup-header span {
+  font-family: var(--hud, 'Orbitron', monospace);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--b, #00e5ff);
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
+}
+.cx-popup-close {
+  background: transparent;
+  border: none;
+  color: rgba(0, 229, 255, 0.5);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0 6px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.cx-popup-close:hover {
+  color: var(--r, #ff003c);
+}
+.cx-popup-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cx-popup-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(0, 229, 255, 0.02);
+  border: 1px solid rgba(0, 229, 255, 0.08);
+  border-radius: 4px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.cx-popup-item:hover {
+  background: rgba(0, 229, 255, 0.08);
+  border-color: var(--b, #00e5ff);
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
+}
+.cx-popup-icon {
+  font-size: 22px;
+}
+.cx-popup-text {
+  display: flex;
+  flex-direction: column;
+}
+.cx-popup-title {
+  font-family: var(--hud, 'Orbitron', monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--b, #00e5ff);
+}
+.cx-popup-desc {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+.cx-popup-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media (max-width: 420px) {
+  .cx-popup-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.cx-popup-grid-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 6px;
+  background: rgba(0, 255, 65, 0.02);
+  border: 1px solid rgba(0, 255, 65, 0.08);
+  border-radius: 4px;
+  text-decoration: none;
+  transition: all 0.2s;
+  text-align: center;
+}
+.cx-popup-grid-item:hover {
+  background: rgba(0, 255, 65, 0.08);
+  border-color: var(--g, #00ff41);
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.15);
+}
+.cx-popup-grid-icon {
+  font-size: 22px;
+}
+.cx-popup-grid-name {
+  font-family: var(--hud, 'Orbitron', monospace);
+  font-size: 8px;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+</style>
+
+<div class="cx-nav-overlay" id="cx-tools-overlay">
+  <div class="cx-nav-popup" id="cx-tools-popup">
+    <div class="cx-popup-header">
+      <span>// TOOLS ENGINE</span>
+      <button class="cx-popup-close" id="cx-tools-close">&times;</button>
+    </div>
+    <div class="cx-popup-list">
+      <a href="tools.html" class="cx-popup-item">
+        <span class="cx-popup-icon">🔧</span>
+        <div class="cx-popup-text">
+          <span class="cx-popup-title">TOOL ANALYZER</span>
+          <span class="cx-popup-desc">Deep dive into Nmap, Burp, Metasploit</span>
+        </div>
+      </a>
+      <a href="commands.html" class="cx-popup-item">
+        <span class="cx-popup-icon">💻</span>
+        <div class="cx-popup-text">
+          <span class="cx-popup-title">KALI COMMANDS</span>
+          <span class="cx-popup-desc">Quick terminal commands reference</span>
+        </div>
+      </a>
+      <a href="osint.html" class="cx-popup-item">
+        <span class="cx-popup-icon">🔍</span>
+        <div class="cx-popup-text">
+          <span class="cx-popup-title">OSINT TOOLKIT</span>
+          <span class="cx-popup-desc">Domain, email, IP and image forensics</span>
+        </div>
+      </a>
+      <a href="ports.html" class="cx-popup-item">
+        <span class="cx-popup-icon">🔌</span>
+        <div class="cx-popup-text">
+          <span class="cx-popup-title">PORT REFERENCE</span>
+          <span class="cx-popup-desc">Protocol registry & CEH exam mode</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="cx-nav-overlay" id="cx-more-overlay">
+  <div class="cx-nav-popup" id="cx-more-popup">
+    <div class="cx-popup-header">
+      <span>// MORE MODULES</span>
+      <button class="cx-popup-close" id="cx-more-close">&times;</button>
+    </div>
+    <div class="cx-popup-grid">
+      <a href="attacks.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">💀</span>
+        <span class="cx-popup-grid-name">ATTACKS</span>
+      </a>
+      <a href="roadmap.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">🗺️</span>
+        <span class="cx-popup-grid-name">ROADMAP</span>
+      </a>
+      <a href="notes.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">📝</span>
+        <span class="cx-popup-grid-name">NOTES</span>
+      </a>
+      <a href="ctf.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">🏴</span>
+        <span class="cx-popup-grid-name">CTF HELPER</span>
+      </a>
+      <a href="quiz.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">🎯</span>
+        <span class="cx-popup-grid-name">QUIZ</span>
+      </a>
+      <a href="index.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">📊</span>
+        <span class="cx-popup-grid-name">PROGRESS</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const toolsBtn = document.getElementById('nav-tools-btn');
+  const moreBtn = document.getElementById('nav-more-btn');
+  const toolsOverlay = document.getElementById('cx-tools-overlay');
+  const moreOverlay = document.getElementById('cx-more-overlay');
+  const toolsClose = document.getElementById('cx-tools-close');
+  const moreClose = document.getElementById('cx-more-close');
+
+  function openPopup(overlay) {
+    overlay.style.display = 'flex';
+    overlay.offsetHeight;
+    overlay.classList.add('active');
+  }
+
+  function closePopup(overlay) {
+    overlay.classList.remove('active');
+    setTimeout(() => {
+      if (!overlay.classList.contains('active')) {
+        overlay.style.display = 'none';
+      }
+    }, 250);
+  }
+
+  if (toolsBtn && toolsOverlay) {
+    toolsBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openPopup(toolsOverlay);
+      closePopup(moreOverlay);
+    });
+  }
+  if (moreBtn && moreOverlay) {
+    moreBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openPopup(moreOverlay);
+      closePopup(toolsOverlay);
+    });
+  }
+  if (toolsClose && toolsOverlay) {
+    toolsClose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closePopup(toolsOverlay);
+    });
+  }
+  if (moreClose && moreOverlay) {
+    moreClose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closePopup(moreOverlay);
+    });
+  }
+
+  window.addEventListener('click', (e) => {
+    if (toolsOverlay && e.target === toolsOverlay) {
+      closePopup(toolsOverlay);
+    }
+    if (moreOverlay && e.target === moreOverlay) {
+      closePopup(moreOverlay);
+    }
+  });
+})();
 </script>
 </body>
 </html>

@@ -49,3 +49,32 @@ const Stats = {
   inc(key) { const s = this.get(); s[key] = (s[key] || 0) + 1; this.set(s); },
   val(key) { return this.get()[key] || 0; }
 };
+
+/* ════════════ VISIT STREAK TRACKER ════════════ */
+(function(){
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const todayStr = today.getFullYear() + '-' + (today.getMonth()+1) + '-' + today.getDate();
+  const lastVisitStr = localStorage.getItem('cx_last_visit');
+  let streak = parseInt(localStorage.getItem('cx_streak') || '0');
+
+  if(lastVisitStr === todayStr){
+    // Already visited today — no change
+  } else if(lastVisitStr){
+    const parts = lastVisitStr.split('-');
+    const last = new Date(parts[0], parts[1]-1, parts[2]);
+    last.setHours(0,0,0,0);
+    const diffTime = Math.abs(today - last);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if(diffDays === 1){
+      streak += 1; // consecutive day
+    } else {
+      streak = 1;  // streak broken
+    }
+  } else {
+    streak = 1; // first visit ever
+  }
+
+  localStorage.setItem('cx_last_visit', todayStr);
+  localStorage.setItem('cx_streak', String(streak));
+})();

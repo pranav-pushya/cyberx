@@ -467,6 +467,157 @@ html,body{
 }
 .cx-btn:hover:not(:disabled){background:var(--g);color:#000;}
 .cx-btn:disabled{opacity:.3;cursor:not-allowed;}
+
+/* ══════════════ PROGRESS DASHBOARD ══════════════ */
+.prog-stats-row{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:8px;margin-bottom:18px;
+}
+@media(max-width:500px){
+  .prog-stats-row{grid-template-columns:repeat(2,1fr);}
+}
+.prog-stat-card{
+  background:rgba(0,4,10,.85);
+  border:1px solid rgba(0,229,255,.08);
+  border-top:2px solid var(--psc,var(--g));
+  padding:14px 10px;text-align:center;
+  position:relative;overflow:hidden;
+  border-radius:2px;
+}
+.prog-stat-card::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;
+  height:1px;background:linear-gradient(90deg,transparent,var(--psc,var(--g)),transparent);opacity:.25;
+}
+.prog-stat-num{
+  font-family:var(--hud);font-size:28px;font-weight:900;
+  color:var(--psc,var(--g));line-height:1;margin-bottom:4px;
+}
+.prog-stat-label{
+  font-size:8px;letter-spacing:2px;
+  color:rgba(0,229,255,.35);
+}
+
+/* Accuracy Meter */
+.accuracy-wrap{
+  margin-bottom:24px;
+  padding:14px 16px;
+  background:rgba(0,4,10,.7);
+  border:1px solid rgba(0,229,255,.08);
+  border-radius:2px;
+}
+.accuracy-header{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:10px;
+}
+.accuracy-label{
+  font-size:9px;letter-spacing:3px;
+  color:rgba(0,229,255,.35);
+}
+.accuracy-pct{
+  font-family:var(--hud);font-size:20px;font-weight:900;
+}
+.accuracy-bar-bg{
+  width:100%;height:8px;background:rgba(255,255,255,.04);
+  border-radius:4px;overflow:hidden;position:relative;
+}
+.accuracy-bar-fill{
+  height:100%;border-radius:4px;
+  transition:width 1.2s cubic-bezier(.22,1,.36,1);
+  position:relative;
+}
+.accuracy-bar-fill::after{
+  content:'';position:absolute;right:0;top:0;bottom:0;width:12px;
+  background:inherit;filter:blur(6px);opacity:.7;
+}
+
+/* Streak */
+.streak-banner{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:10px 16px;margin-bottom:24px;
+  background:linear-gradient(90deg,rgba(255,215,0,.03),rgba(255,215,0,.08),rgba(255,215,0,.03));
+  border:1px solid rgba(255,215,0,.15);
+  border-radius:2px;
+}
+.streak-num{
+  font-family:var(--hud);font-size:22px;font-weight:900;
+  color:var(--y);
+  text-shadow:0 0 8px rgba(255,215,0,.3);
+}
+.streak-text{
+  font-size:10px;letter-spacing:3px;
+  color:rgba(255,215,0,.6);
+}
+.streak-fire{font-size:20px;}
+
+/* Badges Grid */
+.badges-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:8px;margin-bottom:16px;
+}
+@media(max-width:500px){
+  .badges-grid{grid-template-columns:repeat(2,1fr);}
+}
+.badge-card{
+  position:relative;
+  background:rgba(0,4,10,.9);
+  border:1px solid rgba(0,229,255,.06);
+  border-radius:3px;
+  padding:16px 8px 12px;
+  text-align:center;
+  transition:all .35s cubic-bezier(.22,1,.36,1);
+  overflow:hidden;
+}
+.badge-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 0%,rgba(0,255,65,.04),transparent 70%);
+  opacity:0;transition:opacity .3s;
+}
+.badge-card.unlocked::before{opacity:1;}
+.badge-card.unlocked{
+  border-color:rgba(0,255,65,.2);
+  box-shadow:0 0 20px rgba(0,255,65,.05);
+}
+.badge-card.locked{
+  opacity:.35;filter:grayscale(.6);
+}
+.badge-icon{
+  font-size:28px;display:block;margin-bottom:6px;
+  position:relative;z-index:1;
+}
+.badge-card.unlocked .badge-icon{
+  animation:badgePulse 2.5s ease-in-out infinite;
+}
+@keyframes badgePulse{
+  0%,100%{transform:scale(1);filter:drop-shadow(0 0 4px rgba(0,255,65,.3));}
+  50%{transform:scale(1.08);filter:drop-shadow(0 0 10px rgba(0,255,65,.5));}
+}
+.badge-name{
+  font-family:var(--hud);font-size:8px;font-weight:700;
+  letter-spacing:1px;color:var(--g);
+  margin-bottom:3px;position:relative;z-index:1;
+}
+.badge-card.locked .badge-name{color:rgba(255,255,255,.2);}
+.badge-req{
+  font-size:8px;color:rgba(0,229,255,.25);
+  letter-spacing:.5px;position:relative;z-index:1;
+}
+.badge-lock{
+  position:absolute;top:6px;right:6px;
+  font-size:10px;opacity:.4;
+}
+.badge-card.elite.unlocked{
+  border-color:rgba(255,215,0,.3);
+  box-shadow:0 0 24px rgba(255,215,0,.08),0 0 40px rgba(255,215,0,.03);
+  background:linear-gradient(135deg,rgba(255,215,0,.03),rgba(0,4,10,.9));
+}
+.badge-card.elite.unlocked .badge-name{color:var(--y);}
+.badge-card.elite.unlocked .badge-icon{
+  animation:elitePulse 2s ease-in-out infinite;
+}
+@keyframes elitePulse{
+  0%,100%{transform:scale(1);filter:drop-shadow(0 0 6px rgba(255,215,0,.4));}
+  50%{transform:scale(1.12);filter:drop-shadow(0 0 14px rgba(255,215,0,.6));}
+}
 </style>
 </head>
 <body>
@@ -638,6 +789,57 @@ html,body{
     </a>
   </div>
 
+  <!-- ════ PROGRESS DASHBOARD ════ -->
+  <div class="reveal" style="margin-top:10px;">
+    <div class="sec-label">// YOUR PROGRESS</div>
+    <div class="sec-title">HACKER <span class="g">STATS</span></div>
+  </div>
+
+  <!-- Streak Banner -->
+  <div class="streak-banner reveal" id="streak-banner">
+    <span class="streak-fire">🔥</span>
+    <span class="streak-num" id="streak-num">1</span>
+    <span class="streak-text">DAY STREAK</span>
+    <span class="streak-fire">🔥</span>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="prog-stats-row reveal">
+    <div class="prog-stat-card" style="--psc:#00ff41;">
+      <div class="prog-stat-num" id="ps-topics" data-target="0">0</div>
+      <div class="prog-stat-label">TOPICS LEARNED</div>
+    </div>
+    <div class="prog-stat-card" style="--psc:#00e5ff;">
+      <div class="prog-stat-num" id="ps-quizzes" data-target="0">0</div>
+      <div class="prog-stat-label">QUIZZES TAKEN</div>
+    </div>
+    <div class="prog-stat-card" style="--psc:#ffd700;">
+      <div class="prog-stat-num" id="ps-correct" data-target="0">0</div>
+      <div class="prog-stat-label">CORRECT ANSWERS</div>
+    </div>
+    <div class="prog-stat-card" style="--psc:#bf00ff;">
+      <div class="prog-stat-num" id="ps-ai" data-target="0">0</div>
+      <div class="prog-stat-label">AI QUERIES</div>
+    </div>
+  </div>
+
+  <!-- Accuracy Meter -->
+  <div class="accuracy-wrap reveal">
+    <div class="accuracy-header">
+      <span class="accuracy-label">&gt; QUIZ ACCURACY</span>
+      <span class="accuracy-pct" id="acc-pct" style="color:var(--textdim);">--</span>
+    </div>
+    <div class="accuracy-bar-bg">
+      <div class="accuracy-bar-fill" id="acc-bar" style="width:0%;background:var(--g);"></div>
+    </div>
+  </div>
+
+  <!-- Badges -->
+  <div class="reveal">
+    <div class="sec-label" style="margin-bottom:12px;">// BADGES EARNED</div>
+  </div>
+  <div class="badges-grid reveal" id="badges-grid"></div>
+
   <!-- DAILY TIP -->
   <div class="reveal">
     <div class="sec-label">// INTEL DROP</div>
@@ -658,29 +860,12 @@ html,body{
 </div>
 </div>
 
-<!-- BOTTOM NAV -->
 <nav class="cx-bottom-nav">
-  <a href="index.html" class="cx-nav-item active">
-    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>HOME
-  </a>
-  <a href="learn.html" class="cx-nav-item">
-    <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>LEARN
-  </a>
-  <a href="roadmap.html" class="cx-nav-item">
-    <svg viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon><line x1="9" y1="3" x2="9" y2="18"></line><line x1="15" y1="6" x2="15" y2="21"></line></svg>ROADMAP
-  </a>
-  <a href="notes.html" class="cx-nav-item">
-    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>NOTES
-  </a>
-  <a href="quiz.html" class="cx-nav-item">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>QUIZ
-  </a>
-  <a href="ai-chat.html" class="cx-nav-item">
-    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI
-  </a>
-  <a href="attacks.html" class="cx-nav-item">
-    <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>ATTACK
-  </a>
+  <a href="index.html" class="cx-nav-item active"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>HOME</a>
+  <a href="learn.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>LEARN</a>
+  <button class="cx-nav-item" id="nav-tools-btn"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>TOOLS</button>
+  <a href="ai-chat.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI</a>
+  <button class="cx-nav-item" id="nav-more-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>MORE</button>
 </nav>
 
 <script src="js/api.js"></script>
@@ -1046,6 +1231,424 @@ async function loadTip(){
   }
   btn.disabled=false;
 }
+
+/* ════════════ PROGRESS DASHBOARD ════════════ */
+(function(){
+  // --- Animated Counter ---
+  function animateCounter(el, target, duration){
+    if(!el) return;
+    let start = 0;
+    const step = Math.max(1, Math.ceil(target / (duration / 16)));
+    function tick(){
+      start = Math.min(start + step, target);
+      el.textContent = start;
+      if(start < target) requestAnimationFrame(tick);
+    }
+    tick();
+  }
+
+  // --- Init Dashboard when visible ---
+  const statsRow = document.querySelector('.prog-stats-row');
+  if(!statsRow) return;
+
+  let dashboardLoaded = false;
+  const dashObs = new IntersectionObserver(entries => {
+    if(entries[0].isIntersecting && !dashboardLoaded){
+      dashboardLoaded = true;
+      dashObs.disconnect();
+      loadDashboard();
+    }
+  }, {threshold: 0.2});
+  dashObs.observe(statsRow);
+
+  function loadDashboard(){
+    // Read stats
+    const topicsLearned = Stats.val('topics_learned');
+    const quizTotal     = Stats.val('quiz_total');
+    const quizCorrect   = Stats.val('quiz_correct');
+    const aiQueries     = Stats.val('ai_queries');
+    const attacksStudied= Stats.val('attacks_studied');
+    const toolsAnalyzed = Stats.val('tools_analyzed');
+
+    // Animate stat counters
+    animateCounter(document.getElementById('ps-topics'),  topicsLearned, 800);
+    animateCounter(document.getElementById('ps-quizzes'), quizTotal,     800);
+    animateCounter(document.getElementById('ps-correct'), quizCorrect,   800);
+    animateCounter(document.getElementById('ps-ai'),      aiQueries,     800);
+
+    // Accuracy meter
+    const accPct  = document.getElementById('acc-pct');
+    const accBar  = document.getElementById('acc-bar');
+    if(quizTotal > 0){
+      const pct = Math.round((quizCorrect / quizTotal) * 100);
+      const color = pct < 50 ? '#ff003c' : pct < 75 ? '#ffd700' : '#00ff41';
+      accPct.textContent = pct + '%';
+      accPct.style.color = color;
+      accBar.style.background = color;
+      // Delay for transition effect
+      setTimeout(() => { accBar.style.width = pct + '%'; }, 100);
+    } else {
+      accPct.textContent = 'N/A';
+      accPct.style.color = 'rgba(0,229,255,.3)';
+    }
+
+    // Streak
+    const streakNum = document.getElementById('streak-num');
+    const streak = parseInt(localStorage.getItem('cx_streak') || '1');
+    if(streakNum) streakNum.textContent = streak;
+
+    // --- Badges ---
+    const badges = [
+      {
+        icon: '🔰', name: 'SCRIPT KIDDIE',
+        req: 'Always unlocked',
+        check: () => true
+      },
+      {
+        icon: '🌐', name: 'NETWORKER',
+        req: 'Learn 3+ topics',
+        check: () => topicsLearned >= 3
+      },
+      {
+        icon: '💀', name: 'THREAT ANALYST',
+        req: 'Study 5+ attacks',
+        check: () => attacksStudied >= 5
+      },
+      {
+        icon: '🛠️', name: 'TOOL MASTER',
+        req: 'Analyze 5+ tools',
+        check: () => toolsAnalyzed >= 5
+      },
+      {
+        icon: '🎯', name: 'QUIZ HUNTER',
+        req: 'Take 10+ quizzes',
+        check: () => quizTotal >= 10
+      },
+      {
+        icon: '🏆', name: 'CYBER SCHOLAR',
+        req: '20+ correct answers',
+        check: () => quizCorrect >= 20
+      },
+      {
+        icon: '🔍', name: 'RECON EXPERT',
+        req: '15+ AI queries',
+        check: () => aiQueries >= 15
+      },
+      {
+        icon: '⚡', name: 'ELITE HACKER',
+        req: 'Unlock all badges',
+        check: null, // computed below
+        elite: true
+      }
+    ];
+
+    // Check all non-elite badges first
+    const nonElite = badges.filter(b => !b.elite);
+    const allUnlocked = nonElite.every(b => b.check());
+    badges[badges.length - 1].check = () => allUnlocked;
+
+    const grid = document.getElementById('badges-grid');
+    if(!grid) return;
+
+    badges.forEach((b, i) => {
+      const unlocked = b.check();
+      const card = document.createElement('div');
+      card.className = 'badge-card ' + (unlocked ? 'unlocked' : 'locked') + (b.elite ? ' elite' : '');
+      card.style.animationDelay = (i * 0.06) + 's';
+
+      card.innerHTML = `
+        ${unlocked ? '' : '<span class="badge-lock">🔒</span>'}
+        <span class="badge-icon">${unlocked ? b.icon : '❓'}</span>
+        <div class="badge-name">${b.name}</div>
+        <div class="badge-req">${unlocked ? '✓ UNLOCKED' : b.req}</div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+})();
+</script>
+
+<!-- ══════════════ NAVIGATION POPUPS ══════════════ -->
+<style>
+.cx-nav-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 4, 10, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.cx-nav-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.cx-nav-popup {
+  width: 100%;
+  max-width: 500px;
+  background: rgba(0, 4, 10, 0.95);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  border-bottom: none;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  box-shadow: 0 -10px 40px rgba(0, 229, 255, 0.2);
+  padding: 20px 16px 30px;
+  box-sizing: border-box;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cx-nav-overlay.active .cx-nav-popup {
+  transform: translateY(0);
+}
+.cx-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+  padding-bottom: 10px;
+}
+.cx-popup-header span {
+  font-family: var(--hud, 'Orbitron', monospace);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--b, #00e5ff);
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
+}
+.cx-popup-close {
+  background: transparent;
+  border: none;
+  color: rgba(0, 229, 255, 0.5);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0 6px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.cx-popup-close:hover {
+  color: var(--r, #ff003c);
+}
+.cx-popup-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cx-popup-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(0, 229, 255, 0.02);
+  border: 1px solid rgba(0, 229, 255, 0.08);
+  border-radius: 4px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.cx-popup-item:hover {
+  background: rgba(0, 229, 255, 0.08);
+  border-color: var(--b, #00e5ff);
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
+}
+.cx-popup-icon {
+  font-size: 22px;
+}
+.cx-popup-text {
+  display: flex;
+  flex-direction: column;
+}
+.cx-popup-title {
+  font-family: var(--hud, 'Orbitron', monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--b, #00e5ff);
+}
+.cx-popup-desc {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+.cx-popup-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media (max-width: 420px) {
+  .cx-popup-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.cx-popup-grid-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 6px;
+  background: rgba(0, 255, 65, 0.02);
+  border: 1px solid rgba(0, 255, 65, 0.08);
+  border-radius: 4px;
+  text-decoration: none;
+  transition: all 0.2s;
+  text-align: center;
+}
+.cx-popup-grid-item:hover {
+  background: rgba(0, 255, 65, 0.08);
+  border-color: var(--g, #00ff41);
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.15);
+}
+.cx-popup-grid-icon {
+  font-size: 22px;
+}
+.cx-popup-grid-name {
+  font-family: var(--hud, 'Orbitron', monospace);
+  font-size: 8px;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+</style>
+
+<div class="cx-nav-overlay" id="cx-tools-overlay">
+  <div class="cx-nav-popup" id="cx-tools-popup">
+    <div class="cx-popup-header">
+      <span>// TOOLS ENGINE</span>
+      <button class="cx-popup-close" id="cx-tools-close">&times;</button>
+    </div>
+    <div class="cx-popup-list">
+      <a href="tools.html" class="cx-popup-item">
+        <span class="cx-popup-icon">🔧</span>
+        <div class="cx-popup-text">
+          <span class="cx-popup-title">TOOL ANALYZER</span>
+          <span class="cx-popup-desc">Deep dive into Nmap, Burp, Metasploit</span>
+        </div>
+      </a>
+      <a href="commands.html" class="cx-popup-item">
+        <span class="cx-popup-icon">💻</span>
+        <div class="cx-popup-text">
+          <span class="cx-popup-title">KALI COMMANDS</span>
+          <span class="cx-popup-desc">Quick terminal commands reference</span>
+        </div>
+      </a>
+      <a href="osint.html" class="cx-popup-item">
+        <span class="cx-popup-icon">🔍</span>
+        <div class="cx-popup-text">
+          <span class="cx-popup-title">OSINT TOOLKIT</span>
+          <span class="cx-popup-desc">Domain, email, IP and image forensics</span>
+        </div>
+      </a>
+      <a href="ports.html" class="cx-popup-item">
+        <span class="cx-popup-icon">🔌</span>
+        <div class="cx-popup-text">
+          <span class="cx-popup-title">PORT REFERENCE</span>
+          <span class="cx-popup-desc">Protocol registry & CEH exam mode</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="cx-nav-overlay" id="cx-more-overlay">
+  <div class="cx-nav-popup" id="cx-more-popup">
+    <div class="cx-popup-header">
+      <span>// MORE MODULES</span>
+      <button class="cx-popup-close" id="cx-more-close">&times;</button>
+    </div>
+    <div class="cx-popup-grid">
+      <a href="attacks.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">💀</span>
+        <span class="cx-popup-grid-name">ATTACKS</span>
+      </a>
+      <a href="roadmap.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">🗺️</span>
+        <span class="cx-popup-grid-name">ROADMAP</span>
+      </a>
+      <a href="notes.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">📝</span>
+        <span class="cx-popup-grid-name">NOTES</span>
+      </a>
+      <a href="ctf.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">🏴</span>
+        <span class="cx-popup-grid-name">CTF HELPER</span>
+      </a>
+      <a href="quiz.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">🎯</span>
+        <span class="cx-popup-grid-name">QUIZ</span>
+      </a>
+      <a href="index.html" class="cx-popup-grid-item">
+        <span class="cx-popup-grid-icon">📊</span>
+        <span class="cx-popup-grid-name">PROGRESS</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const toolsBtn = document.getElementById('nav-tools-btn');
+  const moreBtn = document.getElementById('nav-more-btn');
+  const toolsOverlay = document.getElementById('cx-tools-overlay');
+  const moreOverlay = document.getElementById('cx-more-overlay');
+  const toolsClose = document.getElementById('cx-tools-close');
+  const moreClose = document.getElementById('cx-more-close');
+
+  function openPopup(overlay) {
+    overlay.style.display = 'flex';
+    overlay.offsetHeight;
+    overlay.classList.add('active');
+  }
+
+  function closePopup(overlay) {
+    overlay.classList.remove('active');
+    setTimeout(() => {
+      if (!overlay.classList.contains('active')) {
+        overlay.style.display = 'none';
+      }
+    }, 250);
+  }
+
+  if (toolsBtn && toolsOverlay) {
+    toolsBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openPopup(toolsOverlay);
+      closePopup(moreOverlay);
+    });
+  }
+  if (moreBtn && moreOverlay) {
+    moreBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openPopup(moreOverlay);
+      closePopup(toolsOverlay);
+    });
+  }
+  if (toolsClose && toolsOverlay) {
+    toolsClose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closePopup(toolsOverlay);
+    });
+  }
+  if (moreClose && moreOverlay) {
+    moreClose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closePopup(moreOverlay);
+    });
+  }
+
+  window.addEventListener('click', (e) => {
+    if (toolsOverlay && e.target === toolsOverlay) {
+      closePopup(toolsOverlay);
+    }
+    if (moreOverlay && e.target === moreOverlay) {
+      closePopup(moreOverlay);
+    }
+  });
+})();
 </script>
 </body>
 </html>
