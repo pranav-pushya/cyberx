@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>CyberX — Attacks</title>
+<link rel="stylesheet" href="css/style.css"/>
+<style>
+.hud-panel{position:fixed;font-size:9px;letter-spacing:1px;color:rgba(0,229,255,.4);line-height:2;pointer-events:none;z-index:50;}
+.hud-panel.tl{top:50px;left:14px;}
+.hud-label{color:rgba(0,229,255,.2);font-size:8px;letter-spacing:3px;margin-bottom:2px;}
+.hud-val{color:#00e5ff;}.hud-val.g{color:#00ff41;}.hud-val.r{color:#ff003c;}
+.scanlines{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,65,.012) 2px,rgba(0,255,65,.012) 4px);}
+.vignette{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse at center,transparent 40%,rgba(0,4,10,.8) 100%);}
+.cx-tl,.cx-tr,.cx-bl,.cx-br{position:fixed;width:18px;height:18px;pointer-events:none;z-index:50;opacity:.3;}
+.cx-tl{top:50px;left:6px;border-top:1px solid #00e5ff;border-left:1px solid #00e5ff;}
+.cx-tr{top:50px;right:6px;border-top:1px solid #00e5ff;border-right:1px solid #00e5ff;}
+.cx-bl{bottom:62px;left:6px;border-bottom:1px solid #00e5ff;border-left:1px solid #00e5ff;}
+.cx-br{bottom:62px;right:6px;border-bottom:1px solid #00e5ff;border-right:1px solid #00e5ff;}
+.mini-radar-wrap{position:fixed;top:48px;right:14px;z-index:51;pointer-events:none;opacity:.7;}
+.wave-bars{display:flex;align-items:flex-end;gap:1px;height:24px;opacity:.3;position:fixed;z-index:50;}
+.wave-bars.wl{bottom:62px;left:14px;}.wave-bars.wr{bottom:62px;right:14px;}
+
+/* threat meter */
+.threat-meter{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:14px;font-size:10px;letter-spacing:2px;
+}
+.threat-label{color:rgba(255,0,60,.5);}
+.threat-track{flex:1;height:4px;background:rgba(255,0,60,.1);border-radius:2px;overflow:hidden;}
+.threat-fill{height:100%;background:linear-gradient(90deg,var(--y),var(--r));border-radius:2px;transition:width .6s ease;}
+.threat-pct{color:var(--r);font-family:var(--hud,monospace);font-size:11px;min-width:40px;text-align:right;}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="scanlines"></div><div class="vignette"></div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <div class="sb-logo">CYBER<span>X</span></div>
+  <div class="sb-item"><div class="sb-dot r"></div>THREAT DB</div>
+  <div class="sb-item"><div class="sb-dot b"></div>AI ONLINE</div>
+  <div class="sb-item"><div class="sb-dot g"></div>ETHICAL</div>
+  <div class="sb-clock" id="sb-clock">00:00:00</div>
+  <div class="sb-page">ATTACKS</div>
+</div>
+
+<div class="cx-tl"></div><div class="cx-tr"></div><div class="cx-bl"></div><div class="cx-br"></div>
+
+<div class="hud-panel tl">
+  <div class="hud-label">MONITOR</div>
+  <div>CPU &nbsp;<span class="hud-val g" id="hud-cpu">--</span></div>
+  <div>MEM &nbsp;<span class="hud-val g" id="hud-mem">--</span></div>
+  <div>THR &nbsp;<span class="hud-val r" id="hud-threat">--</span></div>
+</div>
+
+<div class="mini-radar-wrap"><canvas id="mini-radar" width="70" height="70"></canvas></div>
+<div class="wave-bars wl" data-bars="14"></div>
+<div class="wave-bars wr" data-bars="14"></div>
+
+<main class="cx-page">
+  <div class="page-header">
+    <div class="page-header-icon">⚡</div>
+    <div>
+      <div class="page-header-title">ATTACK VECTORS</div>
+      <div class="page-header-sub">// CYBER THREAT INTELLIGENCE DATABASE</div>
+    </div>
+  </div>
+
+  <div class="cx-scan">&gt; SELECT ATTACK VECTOR</div>
+
+  <div id="atk-chips" class="cx-chips">
+    <span class="cx-chip red active" data-value="SQL Injection">SQLi</span>
+    <span class="cx-chip red" data-value="Cross-Site Scripting XSS">XSS</span>
+    <span class="cx-chip red" data-value="Man-in-the-Middle MITM">MITM</span>
+    <span class="cx-chip red" data-value="Phishing Attack">PHISHING</span>
+    <span class="cx-chip red" data-value="DDoS Attack">DDoS</span>
+    <span class="cx-chip red" data-value="ARP Poisoning">ARP POISON</span>
+    <span class="cx-chip red" data-value="Brute Force Attack">BRUTE FORCE</span>
+    <span class="cx-chip red" data-value="DNS Poisoning">DNS POISON</span>
+    <span class="cx-chip red" data-value="Buffer Overflow">BUFFER OVF</span>
+    <span class="cx-chip red" data-value="Ransomware Attack">RANSOMWARE</span>
+    <span class="cx-chip red" data-value="Session Hijacking">SESSION HIJ</span>
+    <span class="cx-chip red" data-value="Zero-Day Exploit">ZERO DAY</span>
+    <span class="cx-chip red" data-value="Cross-Site Request Forgery CSRF">CSRF</span>
+    <span class="cx-chip red" data-value="Privilege Escalation">PRIV ESC</span>
+    <span class="cx-chip red" data-value="Supply Chain Attack">SUPPLY CHAIN</span>
+    <span class="cx-chip red" data-value="Social Engineering">SOC ENG</span>
+  </div>
+
+  <!-- THREAT METER -->
+  <div class="threat-meter">
+    <span class="threat-label">THREAT LEVEL</span>
+    <div class="threat-track">
+      <div class="threat-fill" id="threat-fill" style="width:60%"></div>
+    </div>
+    <span class="threat-pct" id="threat-pct">HIGH</span>
+  </div>
+
+  <div class="cx-card red reveal tilt-card">
+    <div class="cx-card-label">&gt; ATTACK BREAKDOWN</div>
+    <div class="cx-card-title" id="atk-title">SELECT ATTACK TYPE</div>
+    <div class="cx-output" id="atk-out">[ Select an attack vector and tap ANALYZE ]<span class="blink">_</span></div>
+  </div>
+
+  <button class="cx-btn red reveal" id="atk-btn" onclick="loadAtk()">⚡ ANALYZE ATTACK</button>
+
+  <div class="cx-btn-row reveal">
+    <button class="cx-btn" onclick="loadDetect()">🔍 DETECTION</button>
+    <button class="cx-btn blue" onclick="loadDefend()">🛡️ DEFENSE</button>
+  </div>
+  <div class="cx-btn-row reveal">
+    <button class="cx-btn yellow" onclick="loadRealAtk()">📰 REAL INCIDENT</button>
+    <button class="cx-btn" style="border-color:rgba(191,0,255,.4);color:rgba(191,0,255,.7);" onclick="loadVariants()">🔀 VARIANTS</button>
+  </div>
+</main>
+
+<nav class="cx-bottom-nav">
+  <a href="index.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>HOME</a>
+  <a href="learn.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>LEARN</a>
+  <a href="quiz.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>QUIZ</a>
+  <a href="ai-chat.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI</a>
+  <a href="attacks.html" class="cx-nav-item active"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>ATTACK</a>
+</nav>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script src="js/hud.js"></script>
+<script>
+let curAtk = 'SQL Injection';
+
+const threatMap = {
+  'SQL Injection':85,'Cross-Site Scripting XSS':70,'Man-in-the-Middle MITM':80,
+  'Phishing Attack':90,'DDoS Attack':75,'ARP Poisoning':65,'Brute Force Attack':60,
+  'DNS Poisoning':70,'Buffer Overflow':88,'Ransomware Attack':95,
+  'Session Hijacking':72,'Zero-Day Exploit':99,'Cross-Site Request Forgery CSRF':55,
+  'Privilege Escalation':80,'Supply Chain Attack':92,'Social Engineering':85
+};
+
+function updateThreat(atk) {
+  const v = threatMap[atk] || 70;
+  document.getElementById('threat-fill').style.width = v + '%';
+  const lbl = v >= 90 ? 'CRITICAL' : v >= 75 ? 'HIGH' : v >= 50 ? 'MEDIUM' : 'LOW';
+  document.getElementById('threat-pct').textContent = lbl;
+  document.getElementById('hud-threat').textContent = lbl;
+}
+
+initChips('#atk-chips', v => {
+  curAtk = v;
+  document.getElementById('atk-title').textContent = v.toUpperCase();
+  setOutput('atk-out', '[ ' + v + ' selected — tap ANALYZE ATTACK ]');
+  updateThreat(v);
+});
+
+async function loadAtk() {
+  setBtnState('atk-btn', true);
+  setLoading('atk-out', curAtk);
+  document.getElementById('atk-title').textContent = curAtk.toUpperCase();
+  try {
+    const text = await askGroq(
+      `Break down cyberattack: ${curAtk}\n\n[DEFINITION] 2 sentences\n[HOW IT WORKS] step-by-step →\n[VULNERABLE TARGET] what systems are at risk\n[REAL EXAMPLE] famous real incident\n[SEVERITY] Critical/High/Medium/Low and why\n[ATTACKER GOAL] what they gain\n[HACKER INSIGHT] impressive lesser-known fact\n\nUnder 400 words. Authorized security testing context.`
+    );
+    setOutput('atk-out', text);
+  } catch(e) { setOutput('atk-out', '[ERROR] ' + e.message, 'error'); }
+  setBtnState('atk-btn', false);
+}
+
+async function loadDetect() {
+  setLoading('atk-out', 'DETECTION');
+  try { setOutput('atk-out', '[🔍 DETECTION]\n\n' + await askGroq(`How to detect ${curAtk}? Indicators, log patterns, tools (Wireshark/SIEM/IDS). Under 220 words.`)); }
+  catch(e) { setOutput('atk-out', '[ERROR] ' + e.message, 'error'); }
+}
+
+async function loadDefend() {
+  setLoading('atk-out', 'DEFENSE');
+  try { setOutput('atk-out', '[🛡️ DEFENSE]\n\n' + await askGroq(`Best defenses against ${curAtk}? Specific technical countermeasures, configs, code fixes. Under 220 words.`)); }
+  catch(e) { setOutput('atk-out', '[ERROR] ' + e.message, 'error'); }
+}
+
+async function loadRealAtk() {
+  setLoading('atk-out', 'REAL INCIDENT');
+  try { setOutput('atk-out', '[📰 REAL INCIDENT]\n\n' + await askGroq(`Famous real-world cyberattack using ${curAtk}. Company, year, exact method, damage, lesson learned. Under 220 words.`)); }
+  catch(e) { setOutput('atk-out', '[ERROR] ' + e.message, 'error'); }
+}
+
+async function loadVariants() {
+  setLoading('atk-out', 'VARIANTS');
+  try { setOutput('atk-out', '[🔀 VARIANTS]\n\n' + await askGroq(`Different variants/subtypes of ${curAtk}. For each: name, how it differs, what makes it harder to detect. Use → Under 220 words.`)); }
+  catch(e) { setOutput('atk-out', '[ERROR] ' + e.message, 'error'); }
+}
+
+updateThreat(curAtk);
+</script>
+</body>
+</html>

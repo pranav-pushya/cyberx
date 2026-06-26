@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>CyberX — AI Mentor</title>
+<link rel="stylesheet" href="css/style.css"/>
+<style>
+.hud-panel{position:fixed;font-size:9px;letter-spacing:1px;color:rgba(0,229,255,.4);line-height:2;pointer-events:none;z-index:50;}
+.hud-panel.tl{top:50px;left:14px;}.hud-label{color:rgba(0,229,255,.2);font-size:8px;letter-spacing:3px;margin-bottom:2px;}
+.hud-val{color:#00e5ff;}.hud-val.g{color:#00ff41;}.hud-val.p{color:#bf00ff;}
+.scanlines{position:fixed;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,65,.012) 2px,rgba(0,255,65,.012) 4px);}
+.vignette{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,4,10,.8) 100%);}
+.cx-tl,.cx-tr,.cx-bl,.cx-br{position:fixed;width:18px;height:18px;pointer-events:none;z-index:50;opacity:.3;}
+.cx-tl{top:50px;left:6px;border-top:1px solid #00e5ff;border-left:1px solid #00e5ff;}
+.cx-tr{top:50px;right:6px;border-top:1px solid #00e5ff;border-right:1px solid #00e5ff;}
+.cx-bl{bottom:62px;left:6px;border-bottom:1px solid #00e5ff;border-left:1px solid #00e5ff;}
+.cx-br{bottom:62px;right:6px;border-bottom:1px solid #00e5ff;border-right:1px solid #00e5ff;}
+.mini-radar-wrap{position:fixed;top:48px;right:14px;z-index:51;pointer-events:none;opacity:.7;}
+.wave-bars{display:flex;align-items:flex-end;gap:1px;height:24px;opacity:.3;position:fixed;z-index:50;}
+.wave-bars.wl{bottom:62px;left:14px;}.wave-bars.wr{bottom:62px;right:14px;}
+
+/* AI status indicator */
+.ai-status{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 12px;
+  background:rgba(191,0,255,.04);
+  border:1px solid rgba(191,0,255,.12);
+  border-radius:2px;margin-bottom:12px;
+  font-size:10px;letter-spacing:2px;color:rgba(191,0,255,.6);
+}
+.ai-status-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:#bf00ff;box-shadow:0 0 8px #bf00ff;
+  animation:pulse2 2s ease-in-out infinite;
+}
+@keyframes pulse2{0%,100%{opacity:1;}50%{opacity:.3;}}
+.ai-model{margin-left:auto;font-size:9px;color:rgba(191,0,255,.4);}
+
+/* chat box enhanced */
+.cx-chat-box{
+  background:rgba(0,4,10,.7);
+  border:1px solid rgba(0,229,255,.06);
+  border-radius:3px;
+  height:calc(100vh - 320px);
+  min-height:240px;
+  max-height:480px;
+  overflow-y:auto;padding:12px;
+  margin-bottom:10px;scroll-behavior:smooth;
+  position:relative;
+}
+.cx-chat-box::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(191,0,255,.3),transparent);
+}
+
+/* msg bubbles */
+.cx-msg{margin-bottom:16px;}
+.cx-msg .role{font-size:9px;letter-spacing:2px;margin-bottom:5px;display:flex;align-items:center;gap:6px;}
+.cx-msg.user .role{color:rgba(0,229,255,.5);}
+.cx-msg.user .role::before{content:'';width:14px;height:1px;background:rgba(0,229,255,.3);}
+.cx-msg.ai .role{color:rgba(191,0,255,.6);}
+.cx-msg.ai .role::before{content:'';width:14px;height:1px;background:rgba(191,0,255,.3);}
+.cx-msg.user .text{
+  color:var(--b);font-size:12.5px;line-height:1.65;
+  background:rgba(0,229,255,.04);
+  border:1px solid rgba(0,229,255,.08);
+  border-radius:2px;padding:8px 12px;
+}
+.cx-msg.ai .text{
+  color:rgba(0,255,65,.8);font-size:12.5px;line-height:1.8;
+  white-space:pre-wrap;
+  background:rgba(191,0,255,.03);
+  border:1px solid rgba(191,0,255,.08);
+  border-radius:2px;padding:8px 12px;
+}
+.cx-msg.ai.error .text{color:var(--r);border-color:rgba(255,0,60,.12);background:rgba(255,0,60,.03);}
+
+/* input area */
+.input-wrap{
+  background:rgba(0,4,10,.8);
+  border:1px solid rgba(0,229,255,.1);
+  border-radius:3px;overflow:hidden;
+}
+.input-wrap:focus-within{border-color:rgba(0,229,255,.25);}
+.cx-input{
+  width:100%;background:transparent;border:none;
+  color:var(--g);font-family:var(--font);font-size:12px;
+  padding:12px 14px;resize:none;
+  border-bottom:1px solid rgba(0,229,255,.06);
+}
+.cx-input::placeholder{color:rgba(0,229,255,.2);}
+.input-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 10px;
+}
+.input-hint{font-size:9px;letter-spacing:1px;color:rgba(0,229,255,.2);}
+.cx-send{
+  background:var(--g);border:none;color:#000;
+  font-family:var(--font);font-size:11px;letter-spacing:2px;
+  padding:6px 16px;border-radius:2px;font-weight:bold;
+  transition:all .2s;cursor:pointer;
+}
+.cx-send:hover{box-shadow:0 0 16px rgba(0,255,65,.3);}
+.cx-send:disabled{opacity:.3;cursor:not-allowed;}
+
+.clear-btn{
+  background:transparent;border:1px solid rgba(0,229,255,.1);
+  color:rgba(0,229,255,.3);font-family:var(--font);font-size:9px;
+  padding:4px 10px;border-radius:2px;cursor:pointer;letter-spacing:1px;
+  transition:all .2s;
+}
+.clear-btn:hover{border-color:rgba(255,0,60,.3);color:rgba(255,0,60,.5);}
+
+/* token counter */
+.token-bar{
+  display:flex;align-items:center;gap:8px;
+  font-size:9px;letter-spacing:1px;color:rgba(0,229,255,.25);
+  margin-top:6px;
+}
+.token-fill-wrap{flex:1;height:2px;background:rgba(0,229,255,.08);border-radius:2px;overflow:hidden;}
+.token-fill{height:100%;background:var(--g);border-radius:2px;transition:width .3s ease;}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="scanlines"></div><div class="vignette"></div>
+
+<div class="status-bar">
+  <div class="sb-logo">CYBER<span>X</span></div>
+  <div class="sb-item"><div class="sb-dot g"></div>SECURE</div>
+  <div class="sb-item"><div class="sb-dot b"></div>AI ONLINE</div>
+  <div class="sb-item"><div class="sb-dot" style="background:#bf00ff;box-shadow:0 0 6px #bf00ff;"></div>GROQ</div>
+  <div class="sb-clock" id="sb-clock">00:00:00</div>
+  <div class="sb-page">AI</div>
+</div>
+
+<div class="cx-tl"></div><div class="cx-tr"></div><div class="cx-bl"></div><div class="cx-br"></div>
+<div class="hud-panel tl">
+  <div class="hud-label">SESSION</div>
+  <div>CPU <span class="hud-val g" id="hud-cpu">--</span></div>
+  <div>MEM <span class="hud-val g" id="hud-mem">--</span></div>
+  <div>MSG <span class="hud-val p" id="hud-msgs">0</span></div>
+</div>
+<div class="mini-radar-wrap"><canvas id="mini-radar" width="70" height="70"></canvas></div>
+<div class="wave-bars wl" data-bars="14"></div>
+<div class="wave-bars wr" data-bars="14"></div>
+
+<main class="cx-page">
+  <div class="page-header">
+    <div class="page-header-icon">🤖</div>
+    <div><div class="page-header-title">AI MENTOR</div>
+    <div class="page-header-sub">// CYBERX HACKING ASSISTANT — POWERED BY GROQ</div></div>
+  </div>
+
+  <!-- AI STATUS -->
+  <div class="ai-status">
+    <div class="ai-status-dot"></div>
+    CYBERX AI ONLINE
+    <span class="ai-model">LLaMA-3.3-70B</span>
+  </div>
+
+  <!-- QUICK ASK CHIPS -->
+  <div class="cx-scan">&gt; QUICK ASK</div>
+  <div class="cx-quick-chips">
+    <span class="cx-quick-chip" onclick="quickAsk('What is the difference between IDS and IPS with real examples?')">IDS vs IPS</span>
+    <span class="cx-quick-chip" onclick="quickAsk('Explain SQL injection step by step with a real payload example. For authorized testing.')">SQL Inject</span>
+    <span class="cx-quick-chip" onclick="quickAsk('What is a zero-day exploit? Give a famous real-world example.')">Zero Day</span>
+    <span class="cx-quick-chip" onclick="quickAsk('How does ARP spoofing work step by step at packet level?')">ARP Spoof</span>
+    <span class="cx-quick-chip" onclick="quickAsk('What are the 5 phases of ethical hacking? Explain each in detail.')">EH Phases</span>
+    <span class="cx-quick-chip" onclick="quickAsk('What is Kerberoasting in Active Directory and how does it work?')">Kerberoast</span>
+    <span class="cx-quick-chip" onclick="quickAsk('What are the best free platforms to practice ethical hacking?')">Practice Labs</span>
+    <span class="cx-quick-chip" onclick="quickAsk('Explain the OSI model layers and which attacks target each layer.')">OSI + Attacks</span>
+    <span class="cx-quick-chip" onclick="quickAsk('What is privilege escalation? Give Linux techniques with commands.')">Priv Esc</span>
+    <span class="cx-quick-chip" onclick="quickAsk('How does Wireshark capture packets? What display filters should I know?')">Wireshark</span>
+    <span class="cx-quick-chip" onclick="quickAsk('Is CEH worth it for a beginner? What is the roadmap to get it?')">CEH Worth It?</span>
+    <span class="cx-quick-chip" onclick="quickAsk('What is OSINT and what are the best free tools for passive reconnaissance?')">OSINT Tools</span>
+  </div>
+
+  <!-- CHAT BOX -->
+  <div class="cx-chat-box" id="chat-box">
+    <div class="cx-msg ai">
+      <div class="role">// CYBERX AI — HACKER MENTOR</div>
+      <div class="text">System initialized. I am your cybersecurity mentor — powered by Groq LLaMA-3.3-70B.
+
+Ask me anything:
+→ Hacking tools and commands
+→ Attack techniques and defenses
+→ Career paths and certifications
+→ CTF tips and bug bounty strategies
+→ Any concept from your notes
+
+No fluff. No sugarcoating. Pure technical knowledge.<span class="blink">_</span></div>
+    </div>
+  </div>
+
+  <!-- INPUT -->
+  <div class="input-wrap">
+    <textarea
+      class="cx-input"
+      id="chat-input"
+      rows="2"
+      placeholder="ask anything about cybersecurity..."
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"
+      autocomplete="off" autocorrect="off" spellcheck="false"
+    ></textarea>
+    <div class="input-footer">
+      <span class="input-hint">ENTER to send &nbsp;·&nbsp; SHIFT+ENTER new line</span>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="clear-btn" onclick="clearChat()">CLEAR</button>
+        <button class="cx-send" id="chat-send" onclick="sendChat()">SEND ▶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOKEN BAR -->
+  <div class="token-bar">
+    <span>CONTEXT</span>
+    <div class="token-fill-wrap"><div class="token-fill" id="token-fill" style="width:0%"></div></div>
+    <span id="token-pct">0 / 10 msgs</span>
+  </div>
+
+</main>
+
+<nav class="cx-bottom-nav">
+  <a href="index.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>HOME</a>
+  <a href="learn.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>LEARN</a>
+  <a href="quiz.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>QUIZ</a>
+  <a href="ai-chat.html" class="cx-nav-item active"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI</a>
+  <a href="attacks.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>ATTACK</a>
+</nav>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script src="js/hud.js"></script>
+<script>
+let chatHistory = [];
+let msgCount = 0;
+
+function addMsg(role, text, isErr) {
+  const box = document.getElementById('chat-box');
+  const el  = document.createElement('div');
+  el.className = 'cx-msg ' + role + (isErr ? ' error' : '');
+  el.innerHTML = `<div class="role">${role === 'user' ? '// YOU' : '// CYBERX AI'}</div><div class="text">${escHtml(text)}</div>`;
+  box.appendChild(el);
+  box.scrollTop = box.scrollHeight;
+  return el;
+}
+
+function updateMsg(el, text) {
+  el.querySelector('.text').textContent = text;
+  document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+}
+
+function updateTokenBar() {
+  const max = 10;
+  const pct = Math.min(chatHistory.length / max * 100, 100);
+  document.getElementById('token-fill').style.width = pct + '%';
+  document.getElementById('token-fill').style.background = pct > 80 ? 'var(--r)' : pct > 60 ? 'var(--y)' : 'var(--g)';
+  document.getElementById('token-pct').textContent = Math.floor(chatHistory.length / 2) + ' / ' + max + ' msgs';
+  document.getElementById('hud-msgs').textContent = Math.floor(chatHistory.length / 2);
+}
+
+async function sendChat() {
+  const inp  = document.getElementById('chat-input');
+  const send = document.getElementById('chat-send');
+  const msg  = inp.value.trim();
+  if (!msg) return;
+
+  inp.value = '';
+  inp.style.height = '';
+  send.disabled = true;
+
+  addMsg('user', msg);
+  chatHistory.push({ role: 'user', content: msg });
+  updateTokenBar();
+
+  const thinkEl = addMsg('ai', '> Processing query...\n> Accessing knowledge base...\n> Generating response_');
+
+  try {
+    const recent = chatHistory.slice(-12); // keep last 12 messages
+    const text   = await callGroq(recent);
+    chatHistory.push({ role: 'assistant', content: text });
+    updateMsg(thinkEl, text);
+    Stats.inc('ai_queries');
+  } catch(e) {
+    thinkEl.classList.add('error');
+    updateMsg(thinkEl, '[CONNECTION ERROR]\n' + e.message + '\n\nCheck Groq API key in js/api.js');
+  }
+
+  send.disabled = false;
+  inp.focus();
+  updateTokenBar();
+}
+
+function quickAsk(q) {
+  document.getElementById('chat-input').value = q;
+  sendChat();
+}
+
+function clearChat() {
+  chatHistory = [];
+  msgCount    = 0;
+  updateTokenBar();
+  const box = document.getElementById('chat-box');
+  box.innerHTML = `
+    <div class="cx-msg ai">
+      <div class="role">// CYBERX AI — HACKER MENTOR</div>
+      <div class="text">Chat cleared. Fresh session started.\nAsk me anything about cybersecurity.<span class="blink">_</span></div>
+    </div>`;
+}
+
+// auto-resize textarea
+document.getElementById('chat-input').addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+</script>
+</body>
+</html>

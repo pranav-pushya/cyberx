@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>CyberX — Learn</title>
+<link rel="stylesheet" href="css/style.css"/>
+<style>
+.hud-panel{position:fixed;font-size:9px;letter-spacing:1px;color:rgba(0,229,255,.4);line-height:2;pointer-events:none;z-index:50;}
+.hud-panel.tl{top:50px;left:14px;}
+.hud-panel.tr{top:50px;right:14px;text-align:right;}
+.hud-label{color:rgba(0,229,255,.2);font-size:8px;letter-spacing:3px;margin-bottom:2px;}
+.hud-val{color:#00e5ff;}.hud-val.g{color:#00ff41;}.hud-val.r{color:#ff003c;}
+.scanlines{position:fixed;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,65,.012) 2px,rgba(0,255,65,.012) 4px);}
+.vignette{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,4,10,.8) 100%);}
+.cx-tl,.cx-tr,.cx-bl,.cx-br{position:fixed;width:18px;height:18px;pointer-events:none;z-index:50;opacity:.3;}
+.cx-tl{top:50px;left:6px;border-top:1px solid #00e5ff;border-left:1px solid #00e5ff;}
+.cx-tr{top:50px;right:6px;border-top:1px solid #00e5ff;border-right:1px solid #00e5ff;}
+.cx-bl{bottom:62px;left:6px;border-bottom:1px solid #00e5ff;border-left:1px solid #00e5ff;}
+.cx-br{bottom:62px;right:6px;border-bottom:1px solid #00e5ff;border-right:1px solid #00e5ff;}
+/* mini radar */
+.mini-radar-wrap{position:fixed;top:48px;right:14px;z-index:51;pointer-events:none;opacity:.7;}
+/* wave bars */
+.wave-bars{display:flex;align-items:flex-end;gap:1px;height:24px;opacity:.3;position:fixed;z-index:50;}
+.wave-bars.wl{bottom:62px;left:14px;}.wave-bars.wr{bottom:62px;right:14px;}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <div class="sb-logo">CYBER<span>X</span></div>
+  <div class="sb-item"><div class="sb-dot g"></div>SECURE</div>
+  <div class="sb-item"><div class="sb-dot b"></div>AI ONLINE</div>
+  <div class="sb-item"><div class="sb-dot r"></div>TLS 1.3</div>
+  <div class="sb-clock" id="sb-clock">00:00:00</div>
+  <div class="sb-page">LEARN</div>
+</div>
+
+<!-- CORNER BRACKETS -->
+<div class="cx-tl"></div><div class="cx-tr"></div>
+<div class="cx-bl"></div><div class="cx-br"></div>
+
+<!-- HUD PANELS -->
+<div class="hud-panel tl">
+  <div class="hud-label">SYSTEM</div>
+  <div>CPU <span class="hud-val g" id="hud-cpu">--</span></div>
+  <div>MEM <span class="hud-val g" id="hud-mem">--</span></div>
+  <div>AI &nbsp;<span class="hud-val g">GROQ</span></div>
+</div>
+
+<!-- MINI RADAR -->
+<div class="mini-radar-wrap">
+  <canvas id="mini-radar" width="70" height="70"></canvas>
+</div>
+
+<!-- WAVEFORM BARS -->
+<div class="wave-bars wl" data-bars="14"></div>
+<div class="wave-bars wr" data-bars="14"></div>
+
+<!-- PAGE -->
+<main class="cx-page">
+  <div class="page-header">
+    <div class="page-header-icon">🧠</div>
+    <div>
+      <div class="page-header-title">KNOWLEDGE BASE</div>
+      <div class="page-header-sub">// AI-POWERED CYBER LEARNING MODULE</div>
+    </div>
+  </div>
+
+  <div class="cx-scan">&gt; SELECT TOPIC MODULE</div>
+
+  <div id="topic-chips" class="cx-chips">
+    <span class="cx-chip active" data-value="Footprinting and OSINT techniques">OSINT</span>
+    <span class="cx-chip" data-value="Network Scanning with Nmap">SCANNING</span>
+    <span class="cx-chip" data-value="ARP Spoofing and MITM attacks">ARP/MITM</span>
+    <span class="cx-chip" data-value="Web Application Hacking and OWASP Top 10">WEB HACK</span>
+    <span class="cx-chip" data-value="Social Engineering attacks">SOC ENG</span>
+    <span class="cx-chip" data-value="Cryptography basics for ethical hackers">CRYPTO</span>
+    <span class="cx-chip" data-value="Malware types and how they work">MALWARE</span>
+    <span class="cx-chip" data-value="Wireless security and WiFi hacking">WIRELESS</span>
+    <span class="cx-chip" data-value="Privilege Escalation techniques">PRIVESC</span>
+    <span class="cx-chip" data-value="Password Attack techniques">PASSWORDS</span>
+    <span class="cx-chip" data-value="CEH Certification tips and exam strategy">CEH TIPS</span>
+    <span class="cx-chip" data-value="Bug Bounty hunting for beginners">BUG BOUNTY</span>
+    <span class="cx-chip" data-value="Dark Web and Tor network explained">DARK WEB</span>
+    <span class="cx-chip" data-value="Active Directory attacks and Kerberos">AD/KERBEROS</span>
+    <span class="cx-chip" data-value="Steganography and covert data hiding">STEGO</span>
+    <span class="cx-chip" data-value="Cloud Security misconfigurations">CLOUD SEC</span>
+  </div>
+
+  <div class="cx-card reveal">
+    <div class="cx-card-label">&gt; MODULE OUTPUT</div>
+    <div class="cx-output" id="learn-out">[ Select a topic above and tap KNOWLEDGE BURST ]<span class="blink">_</span></div>
+  </div>
+
+  <button class="cx-btn reveal" id="learn-btn" onclick="loadKnowledge()">⚡ KNOWLEDGE BURST</button>
+
+  <div class="cx-btn-row reveal">
+    <button class="cx-btn red" onclick="loadFact()">💡 RANDOM FACT</button>
+    <button class="cx-btn blue" onclick="loadProTip()">🎯 PRO TIP</button>
+  </div>
+  <div class="cx-btn-row reveal">
+    <button class="cx-btn yellow" onclick="loadRealCase()">📰 REAL INCIDENT</button>
+    <button class="cx-btn" style="border-color:rgba(0,229,255,.3);color:rgba(0,229,255,.6);" onclick="loadJargon()">📖 JARGON</button>
+  </div>
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="cx-bottom-nav">
+  <a href="index.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>HOME</a>
+  <a href="learn.html" class="cx-nav-item active"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>LEARN</a>
+  <a href="quiz.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>QUIZ</a>
+  <a href="ai-chat.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI</a>
+  <a href="attacks.html" class="cx-nav-item"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>ATTACK</a>
+</nav>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script src="js/hud.js"></script>
+<script>
+let curTopic='Footprinting and OSINT techniques';
+initChips('#topic-chips',v=>{ curTopic=v; });
+
+async function loadKnowledge(){
+  setBtnState('learn-btn',true); setLoading('learn-out',curTopic);
+  try{
+    const t=await askGroq(`KNOWLEDGE BURST on: ${curTopic}\n\n[OVERVIEW] 2 sentences\n[WHY HACKERS CARE] 2 points →\n[KEY CONCEPTS] 4-5 points →\n[REAL EXAMPLE] one real-world case\n[TOOLS USED] main tools\n[PRO HACKER INSIGHT] one impressive lesser-known fact\n[NEXT STEP] what to practice next\n\nDense, technical, under 420 words.`);
+    setOutput('learn-out',t);
+  }catch(e){ setOutput('learn-out','[ERROR] '+e.message,'error'); }
+  setBtnState('learn-btn',false);
+}
+async function loadFact(){
+  setLoading('learn-out','RANDOM FACT');
+  try{
+    const pool=['Give me one jaw-dropping lesser-known cybersecurity fact most CS students do not know. Specific, surprising, under 130 words.','Share one surprising fact about how a famous cyberattack actually worked — something technical most people get wrong. Under 130 words.','Give me one mind-blowing fact about internet infrastructure that can be exploited. Changes how I see networking. Under 130 words.'];
+    setOutput('learn-out','[💡 RANDOM FACT]\n\n'+await askGroq(pool[Math.floor(Math.random()*pool.length)]));
+  }catch(e){ setOutput('learn-out','[ERROR] '+e.message,'error'); }
+}
+async function loadProTip(){
+  setLoading('learn-out','PRO TIP');
+  try{ setOutput('learn-out','[🎯 PRO TIP]\n\n'+await askGroq(`One actionable PRO TIP for learning ethical hacking related to: ${curTopic}. Specific, practical, under 150 words.`)); }
+  catch(e){ setOutput('learn-out','[ERROR] '+e.message,'error'); }
+}
+async function loadRealCase(){
+  setLoading('learn-out','REAL INCIDENT');
+  try{ setOutput('learn-out','[📰 REAL INCIDENT]\n\n'+await askGroq(`Real-world cyberattack case study related to: ${curTopic}\n[INCIDENT] what happened\n[HOW] technical method\n[IMPACT] damage\n[LESSON] what defenders learned\nUnder 200 words.`)); }
+  catch(e){ setOutput('learn-out','[ERROR] '+e.message,'error'); }
+}
+async function loadJargon(){
+  setLoading('learn-out','JARGON');
+  try{ setOutput('learn-out','[📖 JARGON DECODER]\n\n'+await askGroq(`8 important jargon terms related to: ${curTopic}\nFormat: TERM → plain English 1-2 sentences. Include impressive-sounding terms.`)); }
+  catch(e){ setOutput('learn-out','[ERROR] '+e.message,'error'); }
+}
+</script>
+</body>
+</html>

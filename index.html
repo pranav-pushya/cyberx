@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>CyberX — Hacker OS</title>
+<link rel="stylesheet" href="css/style.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#00ff41;--g2:#00cc33;--gd:#003300;
+  --r:#ff003c;--b:#00e5ff;--p:#bf00ff;
+  --y:#ffd700;--bg:#00040a;
+  --font:'Share Tech Mono','Courier New',monospace;
+  --hud:'Orbitron',monospace;
+}
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+html,body{
+  background:var(--bg);color:var(--g);
+  font-family:var(--font);overflow-x:hidden;
+  min-height:100vh;
+}
+
+/* ── MAIN CANVAS ── */
+#bg-canvas{
+  position:fixed;top:0;left:0;
+  width:100%;height:100%;z-index:0;
+  pointer-events:none;
+}
+
+/* ── SCANLINES ── */
+.scanlines{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:repeating-linear-gradient(
+    0deg,transparent,transparent 2px,
+    rgba(0,255,65,0.015) 2px,rgba(0,255,65,0.015) 4px
+  );
+}
+
+/* ── VIGNETTE ── */
+.vignette{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse at center,transparent 40%,rgba(0,4,10,0.85) 100%);
+}
+
+/* ══════════════ HERO ══════════════ */
+.hero{
+  position:relative;z-index:10;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  overflow:hidden;
+}
+
+/* ── TOP STATUS BAR ── */
+.status-bar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  height:42px;
+  background:rgba(0,4,10,0.92);
+  border-bottom:1px solid rgba(0,229,255,0.15);
+  display:flex;align-items:center;
+  padding:0 12px;gap:0;
+  backdrop-filter:blur(6px);
+}
+.sb-logo{
+  font-family:var(--hud);font-weight:900;font-size:16px;
+  letter-spacing:4px;color:var(--g);margin-right:auto;
+}
+.sb-logo span{color:var(--r);}
+.sb-item{
+  font-size:9px;letter-spacing:2px;color:rgba(0,229,255,0.5);
+  padding:0 10px;border-left:1px solid rgba(0,229,255,0.1);
+  display:flex;align-items:center;gap:5px;
+}
+.sb-dot{width:5px;height:5px;border-radius:50%;}
+.sb-dot.g{background:var(--g);box-shadow:0 0 6px var(--g);}
+.sb-dot.r{background:var(--r);box-shadow:0 0 6px var(--r);}
+.sb-dot.b{background:var(--b);box-shadow:0 0 6px var(--b);}
+.sb-clock{
+  font-family:var(--hud);font-size:11px;color:var(--b);
+  padding:0 12px;letter-spacing:2px;
+}
+
+/* ── HUD PANELS (corners) ── */
+.hud-panel{
+  position:absolute;
+  font-size:9px;letter-spacing:1px;
+  color:rgba(0,229,255,0.5);
+  line-height:1.9;
+  pointer-events:none;
+}
+.hud-panel.tl{top:52px;left:14px;}
+.hud-panel.tr{top:52px;right:14px;text-align:right;}
+.hud-panel.bl{bottom:90px;left:14px;}
+.hud-panel.br{bottom:90px;right:14px;text-align:right;}
+
+.hud-label{color:rgba(0,229,255,0.25);font-size:8px;letter-spacing:3px;margin-bottom:4px;}
+.hud-val{color:var(--b);}
+.hud-val.g{color:var(--g);}
+.hud-val.r{color:var(--r);}
+
+/* ── CORNER BRACKETS ── */
+.corner-tl,.corner-tr,.corner-bl,.corner-br{
+  position:absolute;width:24px;height:24px;
+  pointer-events:none;opacity:0.4;
+}
+.corner-tl{top:52px;left:6px;border-top:1px solid var(--b);border-left:1px solid var(--b);}
+.corner-tr{top:52px;right:6px;border-top:1px solid var(--b);border-right:1px solid var(--b);}
+.corner-bl{bottom:72px;left:6px;border-bottom:1px solid var(--b);border-left:1px solid var(--b);}
+.corner-br{bottom:72px;right:6px;border-bottom:1px solid var(--b);border-right:1px solid var(--b);}
+
+/* ── RADAR / RING SYSTEM ── */
+.radar-wrap{
+  position:relative;
+  width:min(340px,80vw);height:min(340px,80vw);
+  margin-bottom:24px;
+}
+#radar-canvas{width:100%;height:100%;}
+
+/* ── HERO TEXT (centered inside radar gap) ── */
+.hero-center{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  pointer-events:none;
+}
+.hero-eyebrow{
+  font-size:8px;letter-spacing:5px;
+  color:rgba(0,229,255,0.4);margin-bottom:6px;
+  animation:fadeUp .8s ease .3s both;
+}
+.hero-title{
+  font-family:var(--hud);font-weight:900;
+  font-size:clamp(36px,9vw,62px);
+  line-height:1;letter-spacing:2px;color:var(--g);
+  text-shadow:0 0 40px rgba(0,255,65,0.4);
+  animation:fadeUp .8s ease .5s both;
+  position:relative;
+}
+.hero-title .rx{
+  color:var(--r);
+  text-shadow:0 0 30px rgba(255,0,60,0.6);
+  animation:xGlow 2s ease-in-out infinite;
+}
+@keyframes xGlow{
+  0%,100%{text-shadow:0 0 30px rgba(255,0,60,0.8),0 0 60px rgba(255,0,60,0.3);}
+  50%{text-shadow:0 0 8px rgba(255,0,60,0.4);}
+}
+.glitch-clone{
+  position:absolute;top:0;left:0;right:0;
+  font-family:var(--hud);font-weight:900;
+  font-size:clamp(36px,9vw,62px);
+  opacity:0;pointer-events:none;
+  animation:glitch 7s infinite;
+}
+.glitch-clone.r{color:var(--r);animation:glitchR 7s infinite;}
+@keyframes glitch{
+  0%,88%,100%{opacity:0;transform:none;}
+  89%{opacity:.5;transform:translate(-3px,0);clip-path:polygon(0 15%,100% 15%,100% 35%,0 35%);}
+  91%{opacity:.5;transform:translate(3px,0);clip-path:polygon(0 65%,100% 65%,100% 80%,0 80%);}
+  93%{opacity:0;}
+}
+@keyframes glitchR{
+  0%,90%,100%{opacity:0;}
+  91%{opacity:.3;transform:translate(5px,0);clip-path:polygon(0 40%,100% 40%,100% 55%,0 55%);}
+  93%{opacity:0;}
+}
+
+.hero-sub{
+  font-size:9px;letter-spacing:4px;color:rgba(0,229,255,0.5);
+  margin-top:8px;animation:fadeUp .8s ease .7s both;
+}
+
+/* ── DECRYPTING TEXT ── */
+.decrypt-bar{
+  font-size:11px;letter-spacing:3px;color:var(--g);
+  margin-top:4px;
+  animation:fadeUp .8s ease .9s both;
+  min-height:16px;
+}
+
+/* ── CTA BUTTONS ── */
+.cta-row{
+  display:flex;gap:10px;flex-wrap:wrap;justify-content:center;
+  margin-top:20px;z-index:10;
+  animation:fadeUp .8s ease 1.1s both;
+}
+.cta{
+  font-family:var(--font);font-size:10px;letter-spacing:3px;
+  padding:11px 24px;border-radius:2px;
+  text-decoration:none;display:inline-flex;
+  align-items:center;gap:8px;
+  transition:all .2s;position:relative;overflow:hidden;
+  cursor:pointer;border:none;
+}
+.cta::before{
+  content:'';position:absolute;top:0;left:-100%;
+  width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent);
+  transition:left .35s;
+}
+.cta:hover::before{left:100%;}
+.cta.primary{background:var(--g);color:#000;border:1px solid var(--g);}
+.cta.primary:hover{box-shadow:0 0 30px rgba(0,255,65,.35);}
+.cta.ghost{background:transparent;color:var(--b);border:1px solid rgba(0,229,255,.4);}
+.cta.ghost:hover{border-color:var(--b);box-shadow:0 0 20px rgba(0,229,255,.2);color:#fff;}
+.cta.ghost2{background:transparent;color:var(--r);border:1px solid rgba(255,0,60,.4);}
+.cta.ghost2:hover{border-color:var(--r);box-shadow:0 0 20px rgba(255,0,60,.2);}
+
+/* ── WAVEFORM BARS ── */
+.wave-row{
+  display:flex;align-items:flex-end;gap:2px;height:28px;
+  position:absolute;opacity:0.35;
+}
+.wave-row.wl{bottom:100px;left:14px;}
+.wave-row.wr{bottom:100px;right:14px;}
+.wave-bar{
+  width:3px;background:var(--g);border-radius:1px;
+  animation:wavePulse 1.2s ease-in-out infinite;
+}
+@keyframes wavePulse{
+  0%,100%{transform:scaleY(0.3);}
+  50%{transform:scaleY(1);}
+}
+
+/* ── SCROLL INDICATOR ── */
+.scroll-ind{
+  position:absolute;bottom:72px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  animation:fadeUp 1s ease 1.4s both;pointer-events:none;z-index:10;
+}
+.scroll-ind span{font-size:8px;letter-spacing:4px;color:rgba(0,229,255,.3);}
+.scroll-chevron{
+  width:14px;height:14px;
+  border-right:1px solid rgba(0,229,255,.4);
+  border-bottom:1px solid rgba(0,229,255,.4);
+  transform:rotate(45deg);
+  animation:chevBounce 1.4s ease-in-out infinite;
+}
+@keyframes chevBounce{
+  0%,100%{transform:rotate(45deg) translate(0,0);}
+  50%{transform:rotate(45deg) translate(3px,3px);}
+}
+
+/* ══════════════ SCROLL SECTION ══════════════ */
+.scroll-wrap{
+  position:relative;z-index:10;
+  background:linear-gradient(to bottom,transparent,var(--bg) 80px);
+}
+
+/* ── SECTION ── */
+.sec{
+  max-width:720px;margin:0 auto;
+  padding:50px 14px 0;
+}
+
+.sec-label{
+  font-size:9px;letter-spacing:5px;color:rgba(0,229,255,.35);
+  margin-bottom:4px;
+}
+.sec-title{
+  font-family:var(--hud);
+  font-size:clamp(20px,5vw,30px);
+  font-weight:900;color:#fff;
+  margin-bottom:28px;line-height:1.1;
+}
+.sec-title .g{color:var(--g);}
+.sec-title .r{color:var(--r);}
+.sec-title .b{color:var(--b);}
+
+/* ── STAT STRIP ── */
+.stat-strip{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:8px;margin-bottom:40px;
+}
+.stat-cell{
+  background:rgba(0,229,255,.03);
+  border:1px solid rgba(0,229,255,.08);
+  border-top:2px solid var(--b);
+  padding:14px 10px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.stat-cell::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;
+  height:1px;background:linear-gradient(90deg,transparent,var(--b),transparent);
+  opacity:.3;
+}
+.stat-n{
+  font-family:var(--hud);font-size:26px;font-weight:900;
+  color:var(--b);line-height:1;margin-bottom:5px;
+}
+.stat-l{font-size:9px;letter-spacing:2px;color:rgba(0,229,255,.4);}
+
+/* ── HEX GRID MODULES ── */
+.hex-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;margin-bottom:50px;
+}
+@media(min-width:480px){
+  .hex-grid{grid-template-columns:repeat(3,1fr);}
+}
+
+.hex-card{
+  position:relative;
+  background:rgba(0,4,10,.9);
+  border:1px solid rgba(0,229,255,.08);
+  border-radius:3px;
+  padding:18px 12px 14px;
+  text-decoration:none;display:block;
+  overflow:hidden;
+  transform-style:preserve-3d;
+  transition:transform .12s ease,box-shadow .2s,border-color .2s;
+  cursor:pointer;
+}
+
+/* Top scan line */
+.hex-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--hc,var(--g)),transparent);
+  opacity:.5;transition:opacity .2s;
+}
+.hex-card:hover::before{opacity:1;}
+
+/* Bottom accent */
+.hex-card::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:var(--hc,var(--g));
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .25s ease;
+}
+.hex-card:hover::after{transform:scaleX(1);}
+
+.hex-card:hover{
+  border-color:rgba(var(--hcr,0,255,65),.3);
+  box-shadow:0 0 30px rgba(var(--hcr,0,255,65),.07),
+             0 8px 24px rgba(0,0,0,.5);
+  transform:translateY(-3px);
+}
+
+/* corner bracket */
+.hc-corner{
+  position:absolute;top:0;right:0;
+  width:16px;height:16px;
+  border-top:1px solid var(--hc,var(--g));
+  border-right:1px solid var(--hc,var(--g));
+  opacity:.3;
+}
+.hc-num{
+  font-size:8px;letter-spacing:3px;
+  color:rgba(255,255,255,.15);margin-bottom:10px;
+}
+.hc-icon{font-size:24px;margin-bottom:8px;display:block;}
+.hc-title{
+  font-family:var(--hud);font-size:11px;font-weight:700;
+  letter-spacing:2px;color:var(--hc,var(--g));
+  margin-bottom:5px;
+}
+.hc-desc{font-size:10px;color:rgba(255,255,255,.25);line-height:1.5;}
+
+/* color variants */
+.hc-g{--hc:#00ff41;--hcr:0,255,65;}
+.hc-b{--hc:#00e5ff;--hcr:0,229,255;}
+.hc-r{--hc:#ff003c;--hcr:255,0,60;}
+.hc-p{--hc:#bf00ff;--hcr:191,0,255;}
+.hc-y{--hc:#ffd700;--hcr:255,215,0;}
+
+/* ── TERMINAL BOOT ── */
+.boot-wrap{
+  margin-bottom:50px;
+  background:#000;
+  border:1px solid rgba(0,229,255,.1);
+  border-radius:3px;overflow:hidden;
+}
+.boot-topbar{
+  background:rgba(0,229,255,.05);
+  border-bottom:1px solid rgba(0,229,255,.08);
+  padding:8px 12px;
+  display:flex;align-items:center;gap:6px;
+}
+.btb-dot{width:9px;height:9px;border-radius:50%;}
+.btb-dot.r2{background:#ff5f57;}
+.btb-dot.y2{background:#febc2e;}
+.btb-dot.g2{background:#28c840;}
+.btb-name{
+  font-size:10px;letter-spacing:2px;
+  color:rgba(0,229,255,.35);margin-left:8px;
+}
+.boot-body{
+  padding:14px 16px;
+  font-size:11.5px;line-height:1.9;
+  min-height:140px;max-height:200px;overflow:hidden;
+}
+.bt-p{color:var(--r);}
+.bt-g{color:var(--g);}
+.bt-d{color:rgba(0,229,255,.35);}
+.bt-w{color:#fff;}
+.bt-b{color:var(--b);}
+.bt-cur{display:inline-block;width:8px;height:13px;background:var(--g);vertical-align:bottom;animation:blink 1s step-end infinite;}
+
+/* ── DAILY TIP ── */
+.tip-card{
+  background:rgba(0,255,65,.03);
+  border:1px solid rgba(0,255,65,.1);
+  border-left:3px solid var(--g);
+  border-radius:2px;padding:16px;
+  margin-bottom:50px;
+}
+.tip-label{font-size:9px;letter-spacing:3px;color:rgba(0,255,65,.4);margin-bottom:8px;}
+.tip-output{
+  font-size:12px;line-height:1.8;color:rgba(0,255,65,.8);
+  white-space:pre-wrap;min-height:40px;
+}
+.tip-output.loading{opacity:.4;animation:pulse 1.5s ease-in-out infinite;}
+.tip-output.error{color:var(--r);}
+@keyframes pulse{0%,100%{opacity:.4;}50%{opacity:.7;}}
+
+/* ── DISCLAIMER ── */
+.disclaimer{
+  border:1px solid rgba(255,0,60,.15);
+  border-left:3px solid var(--r);
+  background:rgba(255,0,60,.02);
+  padding:14px 16px;border-radius:2px;
+  font-size:10px;color:rgba(255,255,255,.2);
+  line-height:1.8;letter-spacing:.5px;margin-bottom:90px;
+}
+.disclaimer strong{color:rgba(255,0,60,.6);}
+
+/* ── BOTTOM NAV ── */
+.cx-bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  height:54px;
+  background:rgba(0,4,10,.96);
+  border-top:1px solid rgba(0,229,255,.08);
+  display:flex;z-index:200;
+  backdrop-filter:blur(8px);
+}
+.cx-nav-item{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:3px;color:rgba(0,229,255,.3);
+  font-size:8px;letter-spacing:1px;
+  text-decoration:none;transition:color .2s;
+  border:none;background:transparent;cursor:pointer;
+  font-family:var(--font);padding:4px 2px;
+}
+.cx-nav-item svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
+.cx-nav-item.active,.cx-nav-item:hover{color:var(--g);}
+.cx-nav-item.active{border-top:2px solid var(--g);}
+
+/* MISC */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+@keyframes blink{50%{opacity:0;}}
+
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .55s ease,transform .55s ease;}
+.reveal.vis{opacity:1;transform:none;}
+
+/* CTA in scroll section */
+.cx-btn{
+  width:100%;background:transparent;
+  border:1px solid var(--g);color:var(--g);
+  font-family:var(--font);font-size:11px;letter-spacing:2px;
+  padding:10px;border-radius:2px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  cursor:pointer;transition:all .2s;margin-top:10px;
+}
+.cx-btn:hover:not(:disabled){background:var(--g);color:#000;}
+.cx-btn:disabled{opacity:.3;cursor:not-allowed;}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<!-- ════ TOP STATUS BAR ════ -->
+<div class="status-bar">
+  <div class="sb-logo">CYBER<span>X</span></div>
+  <div class="sb-item"><div class="sb-dot g"></div>SECURE</div>
+  <div class="sb-item"><div class="sb-dot b"></div>AI ONLINE</div>
+  <div class="sb-item"><div class="sb-dot r"></div>TLS 1.3</div>
+  <div class="sb-clock" id="sb-clock">00:00:00</div>
+</div>
+
+<!-- ════ HERO ════ -->
+<section class="hero">
+
+  <!-- Corner brackets -->
+  <div class="corner-tl"></div><div class="corner-tr"></div>
+  <div class="corner-bl"></div><div class="corner-br"></div>
+
+  <!-- HUD panels -->
+  <div class="hud-panel tl">
+    <div class="hud-label">SYSTEM STATUS</div>
+    <div>CPU &nbsp;<span class="hud-val g" id="cpu-val">0%</span></div>
+    <div>MEM &nbsp;<span class="hud-val g" id="mem-val">0%</span></div>
+    <div>NET &nbsp;<span class="hud-val b">ACTIVE</span></div>
+    <div>VPN &nbsp;<span class="hud-val g">ON</span></div>
+  </div>
+
+  <div class="hud-panel tr">
+    <div class="hud-label">NODE INFO</div>
+    <div>LAT &nbsp;<span class="hud-val">30.7°N</span></div>
+    <div>LON &nbsp;<span class="hud-val">76.7°E</span></div>
+    <div>ISP &nbsp;<span class="hud-val b">MASKED</span></div>
+    <div>ID &nbsp;&nbsp;<span class="hud-val">CX-2077</span></div>
+  </div>
+
+  <div class="hud-panel bl" id="threat-panel">
+    <div class="hud-label">THREAT LEVEL</div>
+    <div>ACTIVE &nbsp;<span class="hud-val r" id="threat-val">0</span></div>
+    <div>SCAN &nbsp;&nbsp;<span class="hud-val g">CLEAN</span></div>
+    <div>FW &nbsp;&nbsp;&nbsp;<span class="hud-val g">ACTIVE</span></div>
+  </div>
+
+  <div class="hud-panel br">
+    <div class="hud-label">ENCRYPTION</div>
+    <div>ALGO &nbsp;<span class="hud-val b">AES-256</span></div>
+    <div>KEY &nbsp;&nbsp;<span class="hud-val" id="key-val">****</span></div>
+    <div>AUTH &nbsp;<span class="hud-val g">OK</span></div>
+  </div>
+
+  <!-- Waveforms -->
+  <div class="wave-row wl" id="wave-l"></div>
+  <div class="wave-row wr" id="wave-r"></div>
+
+  <!-- ── RADAR RING SYSTEM ── -->
+  <div class="radar-wrap">
+    <canvas id="radar-canvas"></canvas>
+
+    <div class="hero-center">
+      <div class="hero-eyebrow">// ETHICAL HACKER PLATFORM //</div>
+      <div class="hero-title">
+        CYBER<span class="rx">X</span>
+        <div class="glitch-clone">CYBERX</div>
+        <div class="glitch-clone r">CYBERX</div>
+      </div>
+      <div class="hero-sub">LEARN · HACK · DEFEND</div>
+      <div class="decrypt-bar" id="decrypt-bar">&nbsp;</div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-row">
+    <a href="learn.html" class="cta primary">⚡ START LEARNING</a>
+    <a href="ai-chat.html" class="cta ghost">🤖 AI MENTOR</a>
+    <a href="attacks.html" class="cta ghost2">💀 ATTACKS</a>
+  </div>
+
+  <div class="scroll-ind">
+    <span>SCROLL</span>
+    <div class="scroll-chevron"></div>
+  </div>
+
+</section>
+
+<!-- ════ SCROLL CONTENT ════ -->
+<div class="scroll-wrap">
+<div class="sec">
+
+  <!-- STATS -->
+  <div class="stat-strip reveal">
+    <div class="stat-cell">
+      <div class="stat-n" id="cnt1">0</div>
+      <div class="stat-l">TOPICS</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-n" id="cnt2">0</div>
+      <div class="stat-l">TOOLS</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-n">∞</div>
+      <div class="stat-l">AI QUIZZES</div>
+    </div>
+  </div>
+
+  <!-- BOOT TERMINAL -->
+  <div class="boot-wrap reveal">
+    <div class="boot-topbar">
+      <div class="btb-dot r2"></div>
+      <div class="btb-dot y2"></div>
+      <div class="btb-dot g2"></div>
+      <span class="btb-name">root@cyberx — terminal v2.0</span>
+    </div>
+    <div class="boot-body" id="boot-out"></div>
+  </div>
+
+  <!-- MODULES -->
+  <div class="reveal">
+    <div class="sec-label">// NAVIGATION</div>
+    <div class="sec-title">SELECT YOUR <span class="g">WEAPON</span></div>
+  </div>
+
+  <div class="hex-grid">
+    <a href="learn.html" class="hex-card hc-g reveal">
+      <div class="hc-corner"></div>
+      <div class="hc-num">01 ──</div>
+      <span class="hc-icon">🧠</span>
+      <div class="hc-title">LEARN</div>
+      <div class="hc-desc">AI knowledge bursts on 16 cyber topics</div>
+    </a>
+    <a href="tools.html" class="hex-card hc-b reveal">
+      <div class="hc-corner"></div>
+      <div class="hc-num">02 ──</div>
+      <span class="hc-icon">🛠️</span>
+      <div class="hc-title">TOOLS</div>
+      <div class="hc-desc">Nmap, Metasploit, Burp Suite & more</div>
+    </a>
+    <a href="attacks.html" class="hex-card hc-r reveal">
+      <div class="hc-corner"></div>
+      <div class="hc-num">03 ──</div>
+      <span class="hc-icon">⚡</span>
+      <div class="hc-title">ATTACKS</div>
+      <div class="hc-desc">SQLi, XSS, MITM, DDoS breakdowns</div>
+    </a>
+    <a href="commands.html" class="hex-card hc-g reveal">
+      <div class="hc-corner"></div>
+      <div class="hc-num">04 ──</div>
+      <span class="hc-icon">💻</span>
+      <div class="hc-title">COMMANDS</div>
+      <div class="hc-desc">Kali Linux terminal command center</div>
+    </a>
+    <a href="quiz.html" class="hex-card hc-y reveal">
+      <div class="hc-corner"></div>
+      <div class="hc-num">05 ──</div>
+      <span class="hc-icon">🎯</span>
+      <div class="hc-title">QUIZ</div>
+      <div class="hc-desc">Infinite AI quiz — 3 difficulty levels</div>
+    </a>
+    <a href="ai-chat.html" class="hex-card hc-p reveal">
+      <div class="hc-corner"></div>
+      <div class="hc-num">06 ──</div>
+      <span class="hc-icon">🤖</span>
+      <div class="hc-title">AI MENTOR</div>
+      <div class="hc-desc">Ask anything — 24/7 hacker mentor</div>
+    </a>
+  </div>
+
+  <!-- DAILY TIP -->
+  <div class="reveal">
+    <div class="sec-label">// INTEL DROP</div>
+    <div class="sec-title">TODAY'S <span class="g">HACK TIP</span></div>
+  </div>
+  <div class="tip-card reveal">
+    <div class="tip-label">&gt; AI GENERATED INTEL</div>
+    <div class="tip-output" id="daily-tip">[ Tap to load today's hacker knowledge drop ]</div>
+    <button class="cx-btn" onclick="loadTip()" id="tip-btn">⚡ GENERATE INTEL</button>
+  </div>
+
+  <!-- DISCLAIMER -->
+  <div class="disclaimer reveal">
+    <strong>⚠ LEGAL DISCLAIMER —</strong>
+    CyberX is strictly for ETHICAL hacking education. All techniques are for authorized testing on systems you own or have explicit permission to access. Unauthorized access violates IT Act 2000 & international cyber law. Use responsibly. Stay ethical. Stay legal.
+  </div>
+
+</div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="cx-bottom-nav">
+  <a href="index.html" class="cx-nav-item active">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>HOME
+  </a>
+  <a href="learn.html" class="cx-nav-item">
+    <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>LEARN
+  </a>
+  <a href="quiz.html" class="cx-nav-item">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>QUIZ
+  </a>
+  <a href="ai-chat.html" class="cx-nav-item">
+    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI
+  </a>
+  <a href="attacks.html" class="cx-nav-item">
+    <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>ATTACK
+  </a>
+</nav>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script>
+/* ════════════════════════════════════
+   BG CANVAS — particles + matrix + hex
+════════════════════════════════════ */
+(function(){
+  const cv=document.getElementById('bg-canvas'),cx=cv.getContext('2d');
+  let W,H,pts=[],matDrops=[],angle=0,scanA=0;
+  const G='#00ff41',R='#ff003c',B='#00e5ff';
+  const CHARS='アイウエカキクサタ01アCYBERXHACK<>{}[]#$%^';
+
+  function resize(){
+    W=cv.width=window.innerWidth;
+    H=cv.height=window.innerHeight;
+    const fc=Math.floor(W/13);
+    matDrops=Array.from({length:fc},()=>Math.random()*-60);
+  }
+
+  class Pt{
+    constructor(){this.reset();}
+    reset(){
+      this.x=Math.random()*W;this.y=Math.random()*H;
+      this.vx=(Math.random()-.5)*.35;this.vy=(Math.random()-.5)*.35;
+      this.r=Math.random()*1.8+.4;
+      this.c=[G,G,G,G,B,R][Math.floor(Math.random()*6)];
+      this.a=Math.random()*.5+.15;
+    }
+    tick(){
+      this.x+=this.vx;this.y+=this.vy;
+      if(this.x<0||this.x>W||this.y<0||this.y>H)this.reset();
+    }
+    draw(){
+      cx.save();cx.globalAlpha=this.a;
+      cx.fillStyle=this.c;cx.shadowBlur=8;cx.shadowColor=this.c;
+      cx.beginPath();cx.arc(this.x,this.y,this.r,0,Math.PI*2);cx.fill();
+      cx.restore();
+    }
+  }
+
+  function init(){
+    const n=Math.min(70,Math.floor(W/14));
+    pts=Array.from({length:n},()=>new Pt());
+  }
+
+  function drawMatrix(){
+    cx.font='12px Share Tech Mono,monospace';
+    for(let i=0;i<matDrops.length;i++){
+      const ch=CHARS[Math.floor(Math.random()*CHARS.length)];
+      cx.save();cx.globalAlpha=0.055;cx.fillStyle=G;
+      cx.fillText(ch,i*13,matDrops[i]*13);cx.restore();
+      if(matDrops[i]*13>H&&Math.random()>.977)matDrops[i]=0;
+      matDrops[i]+=.38;
+    }
+  }
+
+  function drawLines(){
+    const d=110;
+    for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+      const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,dist=Math.hypot(dx,dy);
+      if(dist<d){
+        cx.save();cx.globalAlpha=(1-dist/d)*.12;cx.strokeStyle=G;
+        cx.lineWidth=.5;cx.beginPath();
+        cx.moveTo(pts[i].x,pts[i].y);cx.lineTo(pts[j].x,pts[j].y);
+        cx.stroke();cx.restore();
+      }
+    }
+  }
+
+  function drawHex(){
+    const cX=W/2,cY=H/2,s=60;
+    cx.save();cx.translate(cX,cY);cx.rotate(angle);
+    cx.globalAlpha=.018;cx.strokeStyle=B;cx.lineWidth=.8;
+    for(let r=-7;r<7;r++)for(let c=-9;c<9;c++){
+      const x=c*s*1.732,y=r*s*2+(c%2===0?0:s);
+      cx.beginPath();
+      for(let k=0;k<6;k++){
+        const a=(Math.PI/3)*k-Math.PI/6;
+        k===0?cx.moveTo(x+s*.9*Math.cos(a),y+s*.9*Math.sin(a))
+             :cx.lineTo(x+s*.9*Math.cos(a),y+s*.9*Math.sin(a));
+      }
+      cx.closePath();cx.stroke();
+    }
+    cx.restore();
+    angle+=.00025;
+  }
+
+  function loop(){
+    cx.clearRect(0,0,W,H);
+    drawHex();drawMatrix();
+    drawLines();
+    pts.forEach(p=>{p.tick();p.draw();});
+    requestAnimationFrame(loop);
+  }
+
+  window.addEventListener('resize',()=>{resize();init();});
+  resize();init();loop();
+})();
+
+/* ════════════ RADAR CANVAS ════════════ */
+(function(){
+  const cv=document.getElementById('radar-canvas');
+  const ctx=cv.getContext('2d');
+  const S=Math.min(340,window.innerWidth*.8);
+  cv.width=cv.height=S;
+  const CX=S/2,CY=S/2;
+  let sweep=0,blips=[];
+  const G='#00ff41',B='#00e5ff',R='#ff003c';
+
+  // generate random blips
+  for(let i=0;i<6;i++){
+    const a=Math.random()*Math.PI*2;
+    const r=Math.random()*.38*S+.05*S;
+    blips.push({a,r,alpha:0,c:[G,B,R][Math.floor(Math.random()*3)]});
+  }
+
+  function drawRings(ctx){
+    const rings=[.18,.30,.42,.5];
+    rings.forEach(f=>{
+      ctx.save();
+      ctx.strokeStyle=B;ctx.globalAlpha=.12;ctx.lineWidth=.8;
+      ctx.beginPath();ctx.arc(CX,CY,f*S,0,Math.PI*2);ctx.stroke();
+      ctx.restore();
+    });
+  }
+
+  function drawCross(ctx){
+    ctx.save();ctx.strokeStyle=B;ctx.globalAlpha=.08;ctx.lineWidth=.6;
+    ctx.setLineDash([4,8]);
+    ctx.beginPath();ctx.moveTo(CX,CY-S*.52);ctx.lineTo(CX,CY+S*.52);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(CX-S*.52,CY);ctx.lineTo(CX+S*.52,CY);ctx.stroke();
+    ctx.setLineDash([]);ctx.restore();
+  }
+
+  function drawSweep(ctx){
+    // glow trail
+    const grad=ctx.createConicGradient?ctx.createConicGradient(sweep-Math.PI*.4,CX,CY):null;
+    ctx.save();
+    if(grad){
+      grad.addColorStop(0,'rgba(0,255,65,0)');
+      grad.addColorStop(.7,'rgba(0,255,65,0.08)');
+      grad.addColorStop(1,'rgba(0,255,65,0.18)');
+      ctx.fillStyle=grad;
+      ctx.globalAlpha=.9;
+      ctx.beginPath();
+      ctx.moveTo(CX,CY);
+      ctx.arc(CX,CY,S*.5,sweep-Math.PI*.4,sweep);
+      ctx.closePath();ctx.fill();
+    }
+
+    // sweep line
+    ctx.strokeStyle=G;ctx.globalAlpha=.7;ctx.lineWidth=1.2;
+    ctx.shadowBlur=8;ctx.shadowColor=G;
+    ctx.beginPath();ctx.moveTo(CX,CY);
+    ctx.lineTo(CX+Math.cos(sweep)*S*.5,CY+Math.sin(sweep)*S*.5);
+    ctx.stroke();ctx.restore();
+  }
+
+  function drawBlips(ctx){
+    blips.forEach(b=>{
+      const diff=((sweep-b.a)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);
+      if(diff<.15)b.alpha=1;
+      else b.alpha=Math.max(0,b.alpha-.008);
+      if(b.alpha<=0)return;
+      const x=CX+Math.cos(b.a)*b.r,y=CY+Math.sin(b.a)*b.r;
+      ctx.save();
+      ctx.globalAlpha=b.alpha;
+      ctx.fillStyle=b.c;ctx.shadowBlur=12;ctx.shadowColor=b.c;
+      ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  function drawOuterRing(ctx){
+    // segmented outer ring
+    const total=60,active=Math.floor(sweep/(Math.PI*2)*total);
+    for(let i=0;i<total;i++){
+      const a=(i/total)*Math.PI*2-Math.PI/2;
+      const a2=((i+.8)/total)*Math.PI*2-Math.PI/2;
+      const r=S*.5;
+      ctx.save();
+      ctx.strokeStyle=i<active?G:B;
+      ctx.globalAlpha=i<active?.7:.12;
+      ctx.lineWidth=i<active?2.5:1;
+      if(i<active){ctx.shadowBlur=6;ctx.shadowColor=G;}
+      ctx.beginPath();
+      ctx.arc(CX,CY,r,a,a2);ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  function loop(){
+    ctx.clearRect(0,0,S,S);
+    drawRings(ctx);drawCross(ctx);
+    drawOuterRing(ctx);
+    drawSweep(ctx);drawBlips(ctx);
+    sweep=(sweep+.012)%(Math.PI*2);
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+/* ════════════ 3D TILT ════════════ */
+document.querySelectorAll('.hex-card').forEach(c=>{
+  c.addEventListener('mousemove',e=>{
+    const r=c.getBoundingClientRect();
+    const dx=(e.clientX-r.left-r.width/2)/(r.width/2);
+    const dy=(e.clientY-r.top-r.height/2)/(r.height/2);
+    c.style.transform=`perspective(500px) rotateX(${dy*-7}deg) rotateY(${dx*7}deg) translateY(-3px)`;
+  });
+  c.addEventListener('mouseleave',()=>{
+    c.style.transform='';
+    c.style.transition='transform .4s ease';
+    setTimeout(()=>c.style.transition='',400);
+  });
+});
+
+/* ════════════ SCROLL REVEAL ════════════ */
+new IntersectionObserver((entries)=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>e.target.classList.add('vis'),i*70);
+      e.target._obs && e.target._obs.unobserve(e.target);
+    }
+  });
+},{threshold:.1})
+.observe && document.querySelectorAll('.reveal').forEach(el=>{
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){e.target.classList.add('vis');obs.unobserve(e.target);}
+    });
+  },{threshold:.08});
+  obs.observe(el);
+});
+
+/* ════════════ COUNTER ════════════ */
+function countUp(el,to,sfx){
+  let n=0;const s=Math.ceil(to/28);
+  const t=setInterval(()=>{n=Math.min(n+s,to);el.textContent=n+(sfx||'');if(n>=to)clearInterval(t);},45);
+}
+new IntersectionObserver(entries=>{
+  if(entries[0].isIntersecting){
+    countUp(document.getElementById('cnt1'),16,'+');
+    countUp(document.getElementById('cnt2'),16,'+');
+  }
+},{threshold:.5}).observe(document.querySelector('.stat-strip'));
+
+/* ════════════ CLOCK ════════════ */
+function tickClock(){
+  const n=new Date();
+  document.getElementById('sb-clock').textContent=
+    [n.getHours(),n.getMinutes(),n.getSeconds()]
+    .map(x=>String(x).padStart(2,'0')).join(':');
+}
+tickClock();setInterval(tickClock,1000);
+
+/* ════════════ ANIMATED HUD VALUES ════════════ */
+function randRange(a,b){return Math.floor(Math.random()*(b-a))+a;}
+setInterval(()=>{
+  document.getElementById('cpu-val').textContent=randRange(12,45)+'%';
+  document.getElementById('mem-val').textContent=randRange(30,70)+'%';
+  document.getElementById('threat-val').textContent=randRange(0,3);
+},2200);
+
+/* ════════════ KEY CYCLING ════════════ */
+const HEX='0123456789ABCDEF';
+setInterval(()=>{
+  document.getElementById('key-val').textContent=
+    Array.from({length:8},()=>HEX[Math.floor(Math.random()*16)]).join('');
+},800);
+
+/* ════════════ DECRYPT BAR ════════════ */
+(function(){
+  const phrases=[
+    'DECRYPTING PAYLOAD...','SCANNING NETWORK...','LOADING MODULES...',
+    'BYPASSING FIREWALL...','ESTABLISHING VPN...','INJECTING PAYLOAD...',
+    'ANALYZING TRAFFIC...','ENUMERATING HOSTS...'
+  ];
+  const el=document.getElementById('decrypt-bar');
+  function nextPhrase(){
+    const p=phrases[Math.floor(Math.random()*phrases.length)];
+    let i=0;el.textContent='';
+    const t=setInterval(()=>{
+      el.textContent+=p[i++];
+      if(i>=p.length){clearInterval(t);setTimeout(nextPhrase,1800);}
+    },55);
+  }
+  setTimeout(nextPhrase,1500);
+})();
+
+/* ════════════ WAVEFORMS ════════════ */
+(function(){
+  ['wave-l','wave-r'].forEach(id=>{
+    const el=document.getElementById(id);
+    for(let i=0;i<18;i++){
+      const b=document.createElement('div');
+      b.className='wave-bar';
+      const h=Math.random()*20+4;
+      b.style.cssText=`height:${h}px;animation-delay:${Math.random()*1.2}s;animation-duration:${.8+Math.random()*.8}s;`;
+      el.appendChild(b);
+    }
+  });
+})();
+
+/* ════════════ BOOT TERMINAL ════════════ */
+(function(){
+  const lines=[
+    {c:'bt-p',t:'root@cyberx:~# '},
+    {c:'bt-w',t:'sudo ./cyberx --init --mode=stealth'},
+    {c:'bt-d',t:'[....] Checking system integrity...'},
+    {c:'bt-g',t:'[ OK ] Kernel modules loaded'},
+    {c:'bt-g',t:'[ OK ] Groq LLaMA-3.3-70B connected'},
+    {c:'bt-g',t:'[ OK ] 16 knowledge modules active'},
+    {c:'bt-b',t:'[ ** ] Running network scan on 192.168.0.0/24'},
+    {c:'bt-g',t:'[ OK ] 6 live hosts detected'},
+    {c:'bt-g',t:'[ OK ] Firewall rules applied'},
+    {c:'bt-p',t:'root@cyberx:~# '},
+    {c:'bt-w',t:'echo "SYSTEM READY — Welcome, Hacker."'},
+    {c:'bt-g',t:'SYSTEM READY — Welcome, Hacker.'},
+  ];
+  const out=document.getElementById('boot-out');
+  let li=0;
+  function nl(){
+    if(li>=lines.length)return;
+    const l=lines[li++];
+    const el=document.createElement('div');
+    el.className=l.c;let ci=0;
+    function tc(){
+      el.textContent+=l.t[ci++];
+      if(ci<l.t.length)setTimeout(tc,16);
+      else setTimeout(nl,90);
+    }
+    out.appendChild(el);tc();
+  }
+  const obs=new IntersectionObserver(e=>{
+    if(e[0].isIntersecting){nl();obs.disconnect();}
+  },{threshold:.4});
+  obs.observe(out);
+})();
+
+/* ════════════ DAILY TIP ════════════ */
+async function loadTip(){
+  const btn=document.getElementById('tip-btn');
+  const out=document.getElementById('daily-tip');
+  btn.disabled=true;
+  out.className='tip-output loading';
+  out.textContent='> Accessing AI knowledge base...\n> Generating intel drop...';
+  try{
+    const pool=[
+      'Give me one jaw-dropping lesser-known cybersecurity fact that most CS students do not know. Specific, surprising, under 130 words.',
+      'What is one thing about how the internet works from a hacker perspective that most people do not know? Under 130 words.',
+      'Tell me about one famous real-world cyberattack: what happened, how they got in, the damage caused. Under 150 words.',
+      'What is one powerful hacking concept that sounds advanced but is simple to understand? Use an analogy. Under 130 words.',
+      'Give me a did-you-know cybersecurity fact about passwords, encryption or network protocols that beginners miss. Under 130 words.'
+    ];
+    const text=await askGroq(pool[Math.floor(Math.random()*pool.length)]);
+    out.className='tip-output';out.textContent=text;
+  }catch(e){
+    out.className='tip-output error';
+    out.textContent='[ERROR] '+e.message+'\n\nInsert Groq API key in js/api.js';
+  }
+  btn.disabled=false;
+}
+</script>
+</body>
+</html>
