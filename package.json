@@ -1,0 +1,19 @@
+{
+  "name": "cyberx",
+  "version": "4.0.0",
+  "description": "CyberX Hacker OS & Cybersecurity Learning Platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "deploy": "firebase deploy"
+  },
+  "keywords": [
+    "cybersecurity",
+    "pentesting",
+    "ctf",
+    "ceh"
+  ],
+  "author": "Pranav",
+  "license": "MIT"
+}

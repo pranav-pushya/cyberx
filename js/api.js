@@ -1,10 +1,7 @@
-// api.js — Groq API handler
-const k1 = 'gsk_onyGTwZdSOooLz';
-const k2 = 'LNkQ8PWGdyb3FYKlLp';
-const k3 = 'q15dJdHfeQb9TW7Hp03n';
-const GROQ_API_KEY = k1 + k2 + k3;
+// api.js — Groq API handler using .env via backend proxy / local server
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
-const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_DIRECT_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const LOCAL_PROXY_URL = '/api/groq';
 
 const SYSTEM_PROMPT = `You are CyberX AI — a senior penetration tester and cybersecurity mentor with 15 years of experience.
 You teach like a no-nonsense hacker: direct, technical, practical, zero fluff.
@@ -22,7 +19,7 @@ Rules:
 - Occasionally drop a "pro hacker insight" that sounds impressive`;
 
 /**
- * Call Groq API
+ * Call Groq API via local server proxy (reads key from .env) or fallback
  * @param {Array} messages - [{role, content}, ...]
  * @param {string} [systemOverride] - optional system prompt override
  * @returns {Promise<string>}
@@ -41,22 +38,50 @@ async function callGroq(messages, systemOverride) {
     stream: false
   };
 
-  const res = await fetch(GROQ_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + GROQ_API_KEY
-    },
-    body: JSON.stringify(payload)
-  });
+  // 1. Primary: Use local server proxy endpoint (reads .env directly)
+  try {
+    const res = await fetch(LOCAL_PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || 'API Error: ' + res.status);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.choices && data.choices[0] && data.choices[0].message) {
+        return data.choices[0].message.content;
+      }
+    } else {
+      const err = await res.json().catch(() => ({}));
+      if (err.error) throw new Error(err.error);
+    }
+  } catch (proxyErr) {
+    if (proxyErr.message && proxyErr.message.includes('GROQ_API_KEY')) {
+      throw proxyErr;
+    }
+    // If proxy unreachable (e.g. static file without server.js), try fallback below
   }
 
-  const data = await res.json();
-  return data.choices[0].message.content;
+  // 2. Fallback: Check window.ENV_GROQ_API_KEY (from js/env.js) or localStorage
+  const fallbackKey = (window.ENV_GROQ_API_KEY || localStorage.getItem('cx_groq_key') || '').trim();
+  if (fallbackKey) {
+    const res = await fetch(GROQ_DIRECT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + fallbackKey
+      },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || 'API Error: ' + res.status);
+    }
+    const data = await res.json();
+    return data.choices[0].message.content;
+  }
+
+  throw new Error('GROQ_API_KEY is not defined in your .env file. Please add your key to .env and run "npm start".');
 }
 
 /**

@@ -1,0 +1,24 @@
+{
+  "name": "CyberX — Hacker OS",
+  "short_name": "CyberX",
+  "description": "Cybersecurity Learning Hub & Pentesting Workstation",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#00040a",
+  "theme_color": "#00ff41",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%2300040a'/><text y='70' x='15' font-size='70' fill='%2300ff41' font-family='monospace'>X</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%2300040a'/><text y='70' x='15' font-size='70' fill='%2300ff41' font-family='monospace'>X</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

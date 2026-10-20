@@ -66,19 +66,24 @@ cyberx/
 CyberX is built entirely as a static client-side web application. There are no server setup or database configurations required.
 
 ### 1. Configure the AI Mentor (Groq Key)
-Open `js/api.js` and add your Groq API key:
-```javascript
-const GROQ_API_KEY = "YOUR_GROQ_API_KEY_HERE";
+Copy `.env.example` to `.env` and add your Groq API key:
+```env
+GROQ_API_KEY="YOUR_GROQ_API_KEY_HERE"
 ```
-*You can get a free key from the [Groq Console](https://console.groq.com/).*
+*You can get a free key from the [Groq Console](https://console.groq.com/keys).*
 
 ### 2. Launching the App
-Simply open `index.html` in any modern web browser or serve it locally using a development server (e.g., Live Server extension in VS Code):
+Start the local server:
 ```bash
-# Example using Python's built-in server
-python -m http.server 8000
+npm start
 ```
-Then navigate to `http://localhost:8000`.
+Then navigate to `http://localhost:5501`.
+
+### 3. Deploying to Firebase
+Deploy hosting and Firestore with:
+```bash
+firebase deploy
+```
 
 ---
 

@@ -32,8 +32,11 @@ function escHtml(str) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
+window.escHtml = escHtml;
+window.escapeHTML = escHtml; // Global backward compatibility alias
 
 function safeParseJSON(text) {
   const clean = text.replace(/```json|```/g, '').trim();
@@ -78,3 +81,10 @@ const Stats = {
   localStorage.setItem('cx_last_visit', todayStr);
   localStorage.setItem('cx_streak', String(streak));
 })();
+
+/* ════════════ PWA SERVICE WORKER REGISTRATION ════════════ */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
