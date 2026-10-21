@@ -655,6 +655,7 @@ function updateProgress() {
 
   // Save to localStorage
   localStorage.setItem('cx_roadmap', JSON.stringify(roadmapData));
+  if (window.cxCloudSync) window.cxCloudSync.push('roadmap', roadmapData);
 
   // Update overall progress bar
   const totalTasks = checkboxes.length || 28;

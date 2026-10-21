@@ -79,10 +79,27 @@ function safeParseJSON(text) {
 
 const Stats = {
   get()    { try { return JSON.parse(localStorage.getItem('cx_stats') || '{}'); } catch { return {}; } },
-  set(d)   { try { localStorage.setItem('cx_stats', JSON.stringify(d)); } catch {} },
+  set(d)   { 
+    try { localStorage.setItem('cx_stats', JSON.stringify(d)); } catch {}
+    if (window.cxCloudSync) window.cxCloudSync.push('stats', d);
+  },
   inc(key) { const s = this.get(); s[key] = (s[key] || 0) + 1; this.set(s); },
   val(key) { return this.get()[key] || 0; }
 };
+
+/* ════════════ CLOUD SYNC UI RE-RENDER LISTENER ════════════ */
+window.addEventListener('cx_sync_update', () => {
+  if (typeof loadNotes === 'function' && typeof renderNotesList === 'function') {
+    loadNotes();
+    renderNotesList();
+  }
+  if (typeof updateProgress === 'function') {
+    updateProgress();
+  }
+  if (typeof updateScore === 'function') {
+    updateScore();
+  }
+});
 
 /* ════════════ VISIT STREAK TRACKER ════════════ */
 (function(){
@@ -122,6 +139,16 @@ if ('serviceWorker' in navigator) {
     }).catch(() => {});
   });
 }
+
+/* ════════════ DYNAMIC CLOUD SYNC SCRIPT LOADER ════════════ */
+(function() {
+  if (!document.getElementById('cx-sync-script')) {
+    const s = document.createElement('script');
+    s.id = 'cx-sync-script';
+    s.src = '/js/sync.js';
+    document.head.appendChild(s);
+  }
+})();
 
 let deferredInstallPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {

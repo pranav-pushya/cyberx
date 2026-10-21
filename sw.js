@@ -18,6 +18,7 @@ const ASSETS_TO_CACHE = [
   '/js/main.js',
   '/js/api.js',
   '/js/hud.js',
+  '/js/sync.js',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png'

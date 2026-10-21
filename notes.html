@@ -499,6 +499,7 @@ function saveNote() {
   
   notes.unshift(newNote);
   localStorage.setItem('cx_notes', JSON.stringify(notes));
+  if (window.cxCloudSync) window.cxCloudSync.push('notes', notes);
   
   titleEl.value = '';
   contentEl.value = '';
@@ -512,6 +513,7 @@ function deleteNote(id) {
   if (confirm('Are you sure you want to delete this note?')) {
     notes = notes.filter(n => n.id !== id);
     localStorage.setItem('cx_notes', JSON.stringify(notes));
+    if (window.cxCloudSync) window.cxCloudSync.push('notes', notes);
     renderNotesList();
   }
 }
@@ -550,6 +552,7 @@ async function enhanceNote(id, btnEl) {
     note.content = text;
     note.timestamp = new Date().toLocaleString() + ' (AI ENHANCED)';
     localStorage.setItem('cx_notes', JSON.stringify(notes));
+    if (window.cxCloudSync) window.cxCloudSync.push('notes', notes);
     renderNotesList();
   } catch (e) {
     alert('[CONNECTION ERROR] ' + e.message + '\n\nCheck internet or Groq configuration.');
