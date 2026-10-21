@@ -11,17 +11,72 @@
   }
   applyTheme();
 
-  function initLogoTrigger() {
-    const centerLogo = document.querySelector('.hero-title');
-    if (centerLogo) {
-      centerLogo.style.pointerEvents = 'auto';
-      centerLogo.style.cursor = 'default';
-      centerLogo.addEventListener('dblclick', (e) => {
-        e.preventDefault();
-        const isGlass = document.body.classList.toggle('glass-theme');
-        localStorage.setItem('cx_theme', isGlass ? 'glass' : 'default');
-      });
+  function toggleTheme(e) {
+    if (e) {
+      if (e.preventDefault) e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
     }
+    const isGlass = document.body.classList.toggle('glass-theme');
+    localStorage.setItem('cx_theme', isGlass ? 'glass' : 'default');
+
+    const target = (e && e.currentTarget) || document.querySelector('.hero-title') || document.querySelector('.sb-logo');
+    if (target) {
+      target.style.transition = 'transform 0.15s ease, filter 0.15s ease';
+      target.style.transform = 'scale(1.06)';
+      setTimeout(() => {
+        target.style.transform = '';
+      }, 180);
+    }
+    return isGlass;
+  }
+  window.toggleTheme = toggleTheme;
+
+  function attachDoubleTap(el) {
+    if (!el) return;
+    el.style.pointerEvents = 'auto';
+    el.style.cursor = 'pointer';
+    el.style.userSelect = 'none';
+    el.style.webkitUserSelect = 'none';
+
+    let lastTap = 0;
+
+    // 1. Native desktop dblclick
+    el.addEventListener('dblclick', toggleTheme);
+
+    // 2. Click double-tap timer (handles rapid mouse clicks within 500ms)
+    el.addEventListener('click', (e) => {
+      const now = Date.now();
+      if (lastTap > 0 && (now - lastTap) < 500) {
+        toggleTheme(e);
+        lastTap = 0;
+      } else {
+        lastTap = now;
+      }
+    });
+
+    // 3. Touch double-tap timer for mobile devices (prevents zoom and toggles immediately)
+    el.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (lastTap > 0 && (now - lastTap) < 500) {
+        toggleTheme(e);
+        lastTap = 0;
+      } else {
+        lastTap = now;
+      }
+    }, { passive: false });
+  }
+
+  function initLogoTrigger() {
+    // 1. Center hero title on home page
+    const centerLogo = document.querySelector('.hero-title');
+    if (centerLogo) attachDoubleTap(centerLogo);
+
+    const heroCenter = document.querySelector('.hero-center');
+    if (heroCenter) heroCenter.style.pointerEvents = 'auto';
+
+    // 2. Top status-bar logo on all pages
+    const sbLogos = document.querySelectorAll('.sb-logo');
+    sbLogos.forEach(attachDoubleTap);
   }
 
   if (document.readyState === 'loading') {

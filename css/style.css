@@ -288,6 +288,18 @@ input,textarea{font-family:var(--font);outline:none;}
   .hud-panel{display:none;}
 }
 
+/* Logo cursor & interaction */
+.hero-title, .sb-logo {
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  pointer-events: auto !important;
+}
+.hero-center {
+  pointer-events: auto !important;
+}
+
 /* ══════════════ DARK GLASSMORPHISM THEME ══════════════ */
 body.glass-theme {
   --bg: #000000;
