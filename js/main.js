@@ -1,5 +1,36 @@
 // main.js — shared utilities
 
+/* ════════════ THEME ENGINE ════════════ */
+(function() {
+  function applyTheme() {
+    if (localStorage.getItem('cx_theme') === 'glass') {
+      document.body.classList.add('glass-theme');
+    } else {
+      document.body.classList.remove('glass-theme');
+    }
+  }
+  applyTheme();
+
+  function initLogoTrigger() {
+    const centerLogo = document.querySelector('.hero-title');
+    if (centerLogo) {
+      centerLogo.style.pointerEvents = 'auto';
+      centerLogo.style.cursor = 'default';
+      centerLogo.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        const isGlass = document.body.classList.toggle('glass-theme');
+        localStorage.setItem('cx_theme', isGlass ? 'glass' : 'default');
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLogoTrigger);
+  } else {
+    initLogoTrigger();
+  }
+})();
+
 function initChips(containerSel, callback) {
   const chips = document.querySelectorAll(containerSel + ' .cx-chip');
   chips.forEach(chip => {

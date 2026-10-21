@@ -286,3 +286,106 @@ input,textarea{font-family:var(--font);outline:none;}
   .sb-item:nth-child(n+4){display:none;}
   .hud-panel{display:none;}
 }
+
+/* ══════════════ DARK GLASSMORPHISM THEME ══════════════ */
+body.glass-theme {
+  --bg: #000000;
+  --border: rgba(255, 255, 255, 0.08);
+  --border2: rgba(255, 255, 255, 0.16);
+  background: #000000 !important;
+}
+body.glass-theme .scanlines {
+  opacity: 0.12;
+}
+body.glass-theme .vignette {
+  background: radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.95) 100%) !important;
+}
+body.glass-theme .status-bar,
+body.glass-theme .cx-bottom-nav {
+  background: rgba(4, 6, 12, 0.55) !important;
+  backdrop-filter: blur(24px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.7);
+}
+body.glass-theme .cx-card,
+body.glass-theme .hex-card,
+body.glass-theme .boot-wrap,
+body.glass-theme .cx-terminal-wrap,
+body.glass-theme .cx-chat-box,
+body.glass-theme .stat-cell,
+body.glass-theme .badge-card,
+body.glass-theme .accuracy-wrap,
+body.glass-theme .overall-progress-wrap,
+body.glass-theme .note-card,
+body.glass-theme .port-card,
+body.glass-theme .tools-grid > div {
+  background: rgba(12, 16, 24, 0.4) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  border-radius: 6px !important;
+}
+body.glass-theme .cx-card.blue,
+body.glass-theme .note-card.category-tools {
+  background: rgba(0, 45, 65, 0.25) !important;
+  border-color: rgba(0, 229, 255, 0.25) !important;
+  border-top-color: rgba(0, 229, 255, 0.45) !important;
+}
+body.glass-theme .cx-card.red,
+body.glass-theme .note-card.category-commands {
+  background: rgba(65, 0, 25, 0.25) !important;
+  border-color: rgba(255, 0, 60, 0.25) !important;
+  border-top-color: rgba(255, 0, 60, 0.45) !important;
+}
+body.glass-theme .cx-card.yellow,
+body.glass-theme .note-card.category-concepts {
+  background: rgba(65, 55, 0, 0.25) !important;
+  border-color: rgba(255, 215, 0, 0.25) !important;
+  border-top-color: rgba(255, 215, 0, 0.45) !important;
+}
+body.glass-theme .cx-btn,
+body.glass-theme .cta {
+  background: rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  border-radius: 4px !important;
+}
+body.glass-theme .cx-btn:hover:not(:disabled),
+body.glass-theme .cta:hover {
+  background: rgba(0, 255, 65, 0.18) !important;
+  border-color: var(--g) !important;
+  box-shadow: 0 0 30px rgba(0, 255, 65, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+}
+body.glass-theme .cx-chip,
+body.glass-theme .cx-quick-chip,
+body.glass-theme .quiz-option,
+body.glass-theme .input-wrap,
+body.glass-theme .cx-input {
+  background: rgba(255, 255, 255, 0.035) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+  border-radius: 4px !important;
+}
+body.glass-theme .cx-chip.active {
+  background: rgba(0, 255, 65, 0.25) !important;
+  border-color: var(--g) !important;
+  color: #fff !important;
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.4) !important;
+}
+body.glass-theme .cx-nav-popup {
+  background: rgba(6, 9, 16, 0.8) !important;
+  backdrop-filter: blur(28px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 -10px 50px rgba(0, 0, 0, 0.9) !important;
+}
+
