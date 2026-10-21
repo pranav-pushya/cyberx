@@ -1,5 +1,5 @@
 // api.js — Groq API handler using .env via backend proxy / local server / Firebase Hosting
-const GROQ_MODEL = 'llama-3.3-70b-versatile';
+let GROQ_MODEL = 'openai/gpt-oss-120b';
 const GROQ_DIRECT_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const LOCAL_PROXY_URL = '/api/groq';
 
@@ -26,6 +26,7 @@ async function resolveGroqKey() {
     const res = await fetch('js/env.json');
     if (res.ok) {
       const data = await res.json();
+      if (data.GROQ_MODEL) GROQ_MODEL = data.GROQ_MODEL;
       if (data.GROQ_API_KEY) {
         cachedApiKey = data.GROQ_API_KEY.trim();
         return cachedApiKey;
