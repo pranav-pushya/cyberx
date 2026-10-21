@@ -11,6 +11,42 @@
   }
   applyTheme();
 
+  function showThemeToast(isGlass) {
+    let toast = document.getElementById('cx-theme-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'cx-theme-toast';
+      document.body.appendChild(toast);
+    }
+    toast.innerHTML = isGlass 
+      ? '<span style="color:#a3ff12;font-size:14px;margin-right:8px;">⚡</span> DARK GLASS THEME <span style="color:#a3ff12;font-weight:700;margin-left:6px;">[ACTIVATED]</span>'
+      : '<span style="color:#00ff41;font-size:14px;margin-right:8px;">⚡</span> RETRO HACKER THEME <span style="color:#00ff41;font-weight:700;margin-left:6px;">[ACTIVATED]</span>';
+    
+    toast.style.cssText = 'position:fixed;top:24px;left:50%;transform:translate(-50%,-12px);z-index:999999;' +
+      'background:rgba(18,20,28,0.92);backdrop-filter:blur(30px) saturate(200%);-webkit-backdrop-filter:blur(30px) saturate(200%);' +
+      'border:1px solid rgba(255,255,255,0.2);border-top:1px solid rgba(255,255,255,0.45);' +
+      'box-shadow:0 15px 40px rgba(0,0,0,0.85), inset 0 1px 1px rgba(255,255,255,0.3);' +
+      'color:#ffffff;font-family:var(--hud,sans-serif);font-size:11px;letter-spacing:1.5px;' +
+      'padding:10px 22px;border-radius:9999px;display:flex;align-items:center;pointer-events:none;' +
+      'transition:all 0.3s cubic-bezier(0.16,1,0.3,1);opacity:0;';
+
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translate(-50%,0)';
+      });
+    } else {
+      toast.style.opacity = '1';
+      toast.style.transform = 'translate(-50%,0)';
+    }
+
+    clearTimeout(window._cxToastTimer);
+    window._cxToastTimer = setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translate(-50%,-12px)';
+    }, 2400);
+  }
+
   function toggleTheme(e) {
     if (e) {
       if (e.preventDefault) e.preventDefault();
@@ -18,6 +54,7 @@
     }
     const isGlass = document.body.classList.toggle('glass-theme');
     localStorage.setItem('cx_theme', isGlass ? 'glass' : 'default');
+    showThemeToast(isGlass);
 
     const target = (e && e.currentTarget) || document.querySelector('.hero-title') || document.querySelector('.sb-logo');
     if (target) {
@@ -67,12 +104,15 @@
   }
 
   function initLogoTrigger() {
-    // 1. Center hero title on home page
+    // 1. Center hero title and center wrap on home page
     const centerLogo = document.querySelector('.hero-title');
     if (centerLogo) attachDoubleTap(centerLogo);
 
     const heroCenter = document.querySelector('.hero-center');
-    if (heroCenter) heroCenter.style.pointerEvents = 'auto';
+    if (heroCenter) attachDoubleTap(heroCenter);
+
+    const radarWrap = document.querySelector('.radar-wrap');
+    if (radarWrap) attachDoubleTap(radarWrap);
 
     // 2. Top status-bar logo on all pages
     const sbLogos = document.querySelectorAll('.sb-logo');
