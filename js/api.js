@@ -21,18 +21,21 @@ async function resolveGroqKey() {
     return cachedApiKey;
   }
 
-  // 3. Try loading js/env.json (synced from .env for Firebase Hosting)
-  try {
-    const res = await fetch('js/env.json');
-    if (res.ok) {
-      const data = await res.json();
-      if (data.GROQ_MODEL) GROQ_MODEL = data.GROQ_MODEL;
-      if (data.GROQ_API_KEY) {
-        cachedApiKey = data.GROQ_API_KEY.trim();
-        return cachedApiKey;
+  // 3. Try loading /js/env.json (synced from .env for Firebase Hosting)
+  const paths = ['/js/env.json?t=' + Date.now(), 'js/env.json?t=' + Date.now(), '/js/env.json', 'js/env.json'];
+  for (const p of paths) {
+    try {
+      const res = await fetch(p, { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.GROQ_MODEL) GROQ_MODEL = data.GROQ_MODEL;
+        if (data.GROQ_API_KEY) {
+          cachedApiKey = data.GROQ_API_KEY.trim();
+          return cachedApiKey;
+        }
       }
-    }
-  } catch (_) {}
+    } catch (_) {}
+  }
 
   return '';
 }

@@ -82,9 +82,44 @@ const Stats = {
   localStorage.setItem('cx_streak', String(streak));
 })();
 
-/* ════════════ PWA SERVICE WORKER REGISTRATION ════════════ */
+/* ════════════ PWA SERVICE WORKER & INSTALL PROMPT ════════════ */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    navigator.serviceWorker.register('/sw.js').then((reg) => {
+      // Force update check
+      reg.update().catch(() => {});
+    }).catch(() => {});
   });
 }
+
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  
+  const sb = document.querySelector('.status-bar');
+  if (sb && !document.getElementById('sb-install-btn')) {
+    const btn = document.createElement('button');
+    btn.id = 'sb-install-btn';
+    btn.className = 'sb-item';
+    btn.style.cssText = 'cursor:pointer;background:rgba(0,255,65,0.12);border:1px solid var(--g,#00ff41);color:var(--g,#00ff41);font-family:var(--hud,monospace);font-size:9px;padding:3px 8px;border-radius:2px;letter-spacing:1px;margin-right:8px;';
+    btn.innerHTML = '📲 INSTALL';
+    btn.onclick = async () => {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        const { outcome } = await deferredInstallPrompt.userChoice;
+        if (outcome === 'accepted') {
+          btn.style.display = 'none';
+        }
+        deferredInstallPrompt = null;
+      }
+    };
+    const clock = document.getElementById('sb-clock');
+    if (clock) {
+      sb.insertBefore(btn, clock);
+    } else {
+      sb.appendChild(btn);
+    }
+  }
+});
+
