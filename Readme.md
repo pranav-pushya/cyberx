@@ -1,93 +1,174 @@
-# CyberX (v4) — Hacker OS & Cybersecurity Platform
+# ⚡ CyberX — Terminal-Grade Cybersecurity Intelligence Platform
 
-CyberX is an interactive, premium cybersecurity learning hub and helper web application designed in a futuristic, terminal-like retro-hacker aesthetic. It functions as both a quick-reference toolkit and an AI-powered study mentor for ethical hackers, pentesting students, and Capture the Flag (CTF) competitors.
+[![Firebase Hosting](https://img.shields.io/badge/Firebase-Hosting-FFA611?style=for-the-badge&logo=firebase&logoColor=black)](https://cyb-erx.web.app)
+[![Cloud Firestore](https://img.shields.io/badge/Firestore-Realtime_Sync-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![Groq API](https://img.shields.io/badge/AI_Engine-Groq_120B-F05032?style=for-the-badge&logo=groq&logoColor=white)](https://groq.com/)
+[![PWA Ready](https://img.shields.io/badge/PWA-Installable_%26_Offline-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-00ff41?style=for-the-badge)](LICENSE)
 
----
+> **CyberX** is a client-side retro-hacker cybersecurity suite and interactive learning operations center. Engineered for aspiring penetration testers, ethical hackers, and CTF competitors, CyberX delivers instant command intelligence, an AI-powered mentor, capture-the-flag cryptanalysis, study tracking, and real-time cross-device synchronization between mobile and desktop devices.
 
-## 🏴 Core Features
-
-### 1. 📊 Progress Dashboard (`index.html`)
-* **Hacker Stats**: Tracks topics learned, quizzes taken, correct answers, and AI mentor queries in real-time.
-* **Accuracy Meter**: Color-coded accuracy tracking (Red < 50%, Yellow < 75%, Green ≥ 75%).
-* **Achievements & Badges**: Unlockable hacker badges based on milestones (e.g., *Script Kiddie*, *Networker*, *Threat Analyst*, *Tool Master*, *Elite Hacker*).
-* **Day Streak**: Tracks daily study habits using time-zone proof streak counting.
-* **Daily Intel Drop**: Generates a random lesser-known cybersecurity fact or real-world cyberattack breakdown via AI.
-
-### 2. 📖 Learn Engine (`learn.html`)
-* **Knowledge Modules**: Categorized interactive learning cards (Web Security, Cryptography, Forensics, OSINT, Network Security, System Security).
-* **Terminology Lookup**: Real-time search engine covering common terms, CVEs, and protocols.
-
-### 3. 🛠️ Tools Engine
-* **Tool Analyzer (`tools.html`)**: Deep-dive analysis and command helpers for core pentesting utilities (Nmap, Metasploit, Burp Suite).
-* **Kali Commands (`commands.html`)**: Searchable database of essential Kali Linux command lines categorized by phase.
-* **OSINT Toolkit (`osint.html`)**: Centralized directory and interactive how-to reference for Open Source Intelligence tools (ExifInfo, FotoForensics, BehindTheEmail, Hunter.io, Who.is, DNSChecker, IpInfo, MXToolbox, VirusTotal, Shodan, Censys, HaveIBeenPwned).
-* **Port Reference (`ports.html`)**: Interactive database of common TCP/UDP ports and protocols featuring a custom **CEH Exam Mode** for study.
-
-### 4. 🧠 Intelligence Modules
-* **AI Chat Mentor (`ai-chat.html`)**: Live conversational interface powered by LLaMA-3.3-70B via the Groq API, offering instant explanations of cyber concepts.
-* **CTF Helper (`ctf.html`)**: Automatic decoder textarea that analyzes strings and suggests decoding scripts (Base64, ROT13, Hex, Morse, Caesar, Hashes) or step-by-step solutions.
-* **Hacker Notepad (`notes.html`)**: Interactive Markdown-compatible notepad to save command cheatsheets and study summaries.
-* **Threat Analyzer (`attacks.html`)**: Phase-by-phase breakdown of major vulnerability classes (SQLi, XSS, CSRF, DDoS, Phishing) with active mitigation strategies.
-* **AI Quizzer (`quiz.html`)**: Generates custom quizzes based on your study topics or provides interactive prep tests.
+🌐 **Live Production App:** [https://cyb-erx.web.app](https://cyb-erx.web.app)
 
 ---
 
-## 📂 Project Structure
+## 🏛️ System Architecture
+
+```
+                    ┌──────────────────────────────────────────────┐
+                    │          CyberX Client Application           │
+                    │   (PWA / Vanilla ES6 / Hardware HUD Canvas)  │
+                    └───────┬──────────────────────────────┬───────┘
+                            │                              │
+         State & Notes Push │ Real-Time Sync               │ Inference Requests
+         (Firestore SDK)    │ (onSnapshot Listener)        │
+                            ▼                              ▼
+                 ┌────────────────────┐         ┌────────────────────┐
+                 │  Cloud Firestore   │         │ Groq AI API Proxy  │
+                 │  (Multi-Device DB) │         │ (gpt-oss-120b)     │
+                 └────────────────────┘         └────────────────────┘
+                            ▲                              │
+                            │ Synchronized Data            │ Streaming Output
+                            │                              │
+                    ┌───────┴──────────────────────────────┴───────┐
+                    │               Mobile / Desktop Node          │
+                    │         (PWA Offline Cache / IndexedDB)      │
+                    └──────────────────────────────────────────────┘
+```
+
+---
+
+## 🚀 Key Architectural Innovations
+
+### 1. 📲 Progressive Web App (PWA) & Offline-First Engine
+* **Standalone Native App**: Installable directly on Android, iOS, Windows, macOS, and Linux via a native Web App Manifest (`manifest.json`) and high-resolution icons (`icon-192.png`, `icon-512.png`).
+* **Service Worker Cache (v3)**: Employs a network-first caching strategy with offline fallback, keeping assets readily available in low-connectivity or air-gapped lab environments.
+
+### 2. 🔄 Firestore Real-Time Cloud Sync
+* **Cross-Device Continuity**: Study notes, CEH roadmap milestones, study streaks, and quiz statistics automatically sync in real-time between your workstation and smartphone.
+* **Offline Resilience**: Offline actions are queued locally via IndexedDB and synchronized to the cloud when network connectivity is restored.
+
+### 3. 🧠 Ultra-Fast AI Intelligence (Groq 120B Model)
+* **Flagship Model**: Powered by Groq's high-throughput `openai/gpt-oss-120b` reasoning engine.
+* **Context-Calibrated Responses**: Calibrated specifically for practical cybersecurity, offensive security techniques, defensible architectures, and ethical testing workflows.
+
+### 4. 🧩 DRY Modular Navigation & HUD Engine
+* **Centralized Popups**: Navigation overlays (`#cx-tools-overlay`, `#cx-more-overlay`) are dynamically injected via `js/main.js` with responsive glassmorphism styles in `css/style.css`, eliminating thousands of lines of duplicate markup.
+* **Hardware HUD**: Real-time simulated system metrics, tactical radar canvas, sound waveform visualizers, and digital clocks.
+
+---
+
+## 📂 Modules & Capabilities
+
+| Module | File | Core Functionality |
+| :--- | :--- | :--- |
+| **Progress Ops** | `index.html` | Real-time mastery analytics, accuracy gauges, unlockable hacker achievements, and visit streak tracker. |
+| **Knowledge Base** | `learn.html` | Interactive curriculum covering OSINT, Network Scanning, Web Hacking, PrivEsc, and Cryptography with AI Knowledge Bursts. |
+| **Tool Analyzer** | `tools.html` | Deep architectural breakdowns, essential command flags, and attack chain recipes for Nmap, Burp Suite, Metasploit, and Wireshark. |
+| **Threat Matrix** | `attacks.html` | Detailed attack vector profiles (SQLi, XSS, CSRF, Buffer Overflow, Ransomware) with threat meters, detection, and countermeasures. |
+| **Terminal Cheats** | `commands.html` | Categorized Kali Linux commands cheat sheet with syntax explanations and powerful one-liner command chains. |
+| **AI Quizzer** | `quiz.html` | Adaptive difficulty multiple-choice quiz engine with robust answer parsing and automated progress tracking. |
+| **AI Mentor** | `ai-chat.html` | Interactive conversational terminal for scenario walkthroughs, payload analysis, and instant technical mentoring. |
+| **Certification Roadmap** | `roadmap.html` | Structured milestone tracker covering Foundations, Network Security, CEH, Pentesting, and Cloud Security. |
+| **Hacker Notepad** | `notes.html` | Persistent local & cloud-synced notes editor with one-click AI Markdown enhancement and auto-tagging. |
+| **CTF Assistant** | `ctf.html` | Client-side decoders (Base64, Hex, Binary, URL, ROT13) and AI crypto-analysis for identifying obscure ciphers and hashes. |
+| **OSINT Suite** | `osint.html` | Categorized directory and dynamic cheat sheets for open-source intelligence tools across domains, emails, IPs, and images. |
+| **Port Reference** | `ports.html` | Interactive TCP/UDP protocol database featuring CEH exam prep mode, vulnerability analysis, and port deep dives. |
+
+---
+
+## 📁 Repository Structure
 
 ```
 cyberx/
+├── 📄 index.html              # Main operations dashboard & analytics
+├── 📄 learn.html              # Curriculum & topic breakdowns
+├── 📄 tools.html              # Pentest tool analyzer & command generator
+├── 📄 attacks.html            # Threat breakdown & defense matrix
+├── 📄 commands.html           # Terminal command cheat sheets & chains
+├── 📄 quiz.html               # Adaptive AI-driven quiz arena
+├── 📄 ai-chat.html            # Direct conversational AI terminal
+├── 📄 roadmap.html            # Certification pathway tracker
+├── 📄 notes.html              # Cloud-synced research notepad
+├── 📄 ctf.html                # Cryptography cracker & CTF decoder
+├── 📄 osint.html              # OSINT directory & helper toolkit
+├── 📄 ports.html              # Protocol database & CEH exam trainer
 │
-├── index.html          # Homepage & Progress Dashboard
-├── learn.html          # Interactive Cyber Curriculum
-├── tools.html          # Pentest Tool Reference
-├── attacks.html        # Attack Vector Database
-├── commands.html       # Kali Command cheatsheet
-├── quiz.html           # Interactive Quiz module
-├── ai-chat.html        # Groq-powered AI Mentor
-├── roadmap.html        # CEH certification roadmap
-├── notes.html          # Local-storage notepad
-├── ctf.html            # Auto decoder & CTF helper
-├── osint.html          # OSINT directory & helper
-└── ports.html          # TCP/UDP Port reference & study mode
+├── 📂 css/
+│   └── 🎨 style.css           # Global hacker palette, glassmorphism, & layout
 │
-├── css/
-│   └── style.css       # Core typography, utility classes, and variables
+├── 📂 js/
+│   ├── ⚙️ api.js              # Groq Cloud API integration & proxy client
+│   ├── 🕹️ hud.js              # Canvas radar, audio waveform, & clock telemetry
+│   ├── 🌐 main.js             # State management, stats engine, & navigation popups
+│   └── ☁️ sync.js             # Real-time Firestore cloud synchronization
 │
-└── js/
-    ├── api.js          # API client for Groq LLaMA integration
-    ├── hud.js          # Canvas radar animations, clock, and hardware simulator
-    └── main.js         # Core application state, dashboard logic, and tracking
+├── 📄 manifest.json           # Web App Manifest for PWA installation
+├── 📄 sw.js                   # Service Worker cache management (v3)
+├── 🖼️ icon-192.png            # High-resolution PWA application icon (192x192)
+├── 🖼️ icon-512.png            # High-resolution splash icon (512x512)
+│
+├── ⚙️ server.js               # Local Node.js development server with API proxy
+├── ⚙️ sync-env.js             # Pre-deployment environment synchronization script
+├── ⚙️ firebase.json           # Firebase Hosting & Firestore configuration
+├── ⚙️ firestore.rules         # Security rules for Firestore cloud sync
+├── ⚙️ firestore.indexes.json  # Database indexes for Firestore
+├── 📄 package.json            # Scripts & project metadata
+├── 📄 .env.example            # Environment template for Groq API configuration
+└── 📄 Readme.md               # Platform documentation
 ```
 
 ---
 
-## ⚡ Setup & Installation
+## 🛠️ Local Development & Deployment
 
-CyberX is built entirely as a static client-side web application. There are no server setup or database configurations required.
+### 1. Prerequisites
+* [Node.js](https://nodejs.org/) (v18 or higher)
+* [Firebase CLI](https://firebase.google.com/docs/cli) (`npm install -g firebase-tools`)
+* A free [Groq API Key](https://console.groq.com/keys)
 
-### 1. Configure the AI Mentor (Groq Key)
-Copy `.env.example` to `.env` and add your Groq API key:
-```env
-GROQ_API_KEY="YOUR_GROQ_API_KEY_HERE"
+### 2. Environment Setup
+Clone the repository and create your local environment file:
+```bash
+git clone https://github.com/pranav-pushya/cyberx.git
+cd cyberx
+cp .env.example .env
 ```
-*You can get a free key from the [Groq Console](https://console.groq.com/keys).*
+Open `.env` and supply your credentials:
+```env
+GROQ_API_KEY="gsk_your_api_key_here"
+GROQ_MODEL="openai/gpt-oss-120b"
+PORT=5501
+```
 
-### 2. Launching the App
-Start the local server:
+### 3. Running Locally
+Launch the local development server:
 ```bash
 npm start
 ```
-Then navigate to `http://localhost:5501`.
+Open your browser at `http://localhost:5501`. The local server automatically proxies Groq API requests via `/api/groq`, keeping your API key secure without exposing it in client storage.
 
-### 3. Deploying to Firebase
-Deploy hosting and Firestore with:
+### 4. Deploying to Firebase Hosting
+Deploy both Firestore security rules and Hosting assets in a single step:
 ```bash
-firebase deploy
+npm run deploy
 ```
+*(The `predeploy` hook automatically triggers `sync-env.js` to synchronize the active environment configuration into `js/env.json` prior to deployment).*
 
 ---
 
-## 🛡️ Legal & Ethical Disclaimer
+## 🔒 Security & Privacy Practices
+* **No Hardcoded Keys**: API keys are strictly excluded from version control (`.gitignore`).
+* **Firestore Access Control**: Strict Firestore security rules restrict write operations to permitted namespaces.
+* **Encrypted Data in Transit**: All AI interactions and database transactions utilize TLS 1.3 encryption.
 
-**IMPORTANT: CyberX is strictly for educational purposes.** 
-All information, commands, tools, and scripts presented are intended to aid students preparing for professional security examinations (e.g., CEH, Security+, OSCP) and developers looking to secure their applications. Performing unauthorized security testing or port scanning on third-party networks without explicit consent is illegal and a violation of the Computer Fraud and Abuse Act (CFAA) and international cyber laws. Use this tool responsibly. Stay ethical. Stay legal.
+---
+
+## ⚖️ Legal & Ethical Disclaimer
+
+**CyberX is developed exclusively for educational and defensive learning purposes.**
+All materials, tools, command syntax, and vulnerability demonstrations are designed to prepare cybersecurity students for professional security credentials (e.g., CEH, CompTIA Security+, OSCP) and assist defensive practitioners in securing web applications. Performing unauthorized security testing, exploitation, or port scanning against targets without explicit, written authorization is strictly illegal under national and international law (e.g., Computer Fraud and Abuse Act). **Always act ethically and legally.**
+
+---
+
+*Engineered with precision for the next generation of ethical security engineers.*
