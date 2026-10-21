@@ -181,3 +181,153 @@ window.addEventListener('beforeinstallprompt', (e) => {
   }
 });
 
+
+
+/* ════════════ NAVIGATION POPUPS ENGINE ════════════ */
+(function() {
+  function initNavPopups() {
+    if (document.getElementById('cx-tools-overlay')) return;
+
+    const toolsOverlay = document.createElement('div');
+    toolsOverlay.className = 'cx-nav-overlay';
+    toolsOverlay.id = 'cx-tools-overlay';
+    toolsOverlay.innerHTML = `
+      <div class="cx-nav-popup" id="cx-tools-popup">
+        <div class="cx-popup-header">
+          <span>// TOOLS ENGINE</span>
+          <button class="cx-popup-close" id="cx-tools-close">&times;</button>
+        </div>
+        <div class="cx-popup-list">
+          <a href="tools.html" class="cx-popup-item">
+            <span class="cx-popup-icon">🔧</span>
+            <div class="cx-popup-text">
+              <span class="cx-popup-title">TOOL ANALYZER</span>
+              <span class="cx-popup-desc">Deep dive into Nmap, Burp, Metasploit</span>
+            </div>
+          </a>
+          <a href="commands.html" class="cx-popup-item">
+            <span class="cx-popup-icon">💻</span>
+            <div class="cx-popup-text">
+              <span class="cx-popup-title">KALI COMMANDS</span>
+              <span class="cx-popup-desc">Quick terminal commands reference</span>
+            </div>
+          </a>
+          <a href="osint.html" class="cx-popup-item">
+            <span class="cx-popup-icon">🔍</span>
+            <div class="cx-popup-text">
+              <span class="cx-popup-title">OSINT TOOLKIT</span>
+              <span class="cx-popup-desc">Domain, email, IP and image forensics</span>
+            </div>
+          </a>
+          <a href="ports.html" class="cx-popup-item">
+            <span class="cx-popup-icon">🔌</span>
+            <div class="cx-popup-text">
+              <span class="cx-popup-title">PORT REFERENCE</span>
+              <span class="cx-popup-desc">Protocol registry & CEH exam mode</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(toolsOverlay);
+
+    const moreOverlay = document.createElement('div');
+    moreOverlay.className = 'cx-nav-overlay';
+    moreOverlay.id = 'cx-more-overlay';
+    moreOverlay.innerHTML = `
+      <div class="cx-nav-popup" id="cx-more-popup">
+        <div class="cx-popup-header">
+          <span>// MORE MODULES</span>
+          <button class="cx-popup-close" id="cx-more-close">&times;</button>
+        </div>
+        <div class="cx-popup-grid">
+          <a href="attacks.html" class="cx-popup-grid-item">
+            <span class="cx-popup-grid-icon">💀</span>
+            <span class="cx-popup-grid-name">ATTACKS</span>
+          </a>
+          <a href="roadmap.html" class="cx-popup-grid-item">
+            <span class="cx-popup-grid-icon">🗺️</span>
+            <span class="cx-popup-grid-name">ROADMAP</span>
+          </a>
+          <a href="notes.html" class="cx-popup-grid-item">
+            <span class="cx-popup-grid-icon">📝</span>
+            <span class="cx-popup-grid-name">NOTES</span>
+          </a>
+          <a href="ctf.html" class="cx-popup-grid-item">
+            <span class="cx-popup-grid-icon">🏴</span>
+            <span class="cx-popup-grid-name">CTF HELPER</span>
+          </a>
+          <a href="quiz.html" class="cx-popup-grid-item">
+            <span class="cx-popup-grid-icon">🎯</span>
+            <span class="cx-popup-grid-name">QUIZ</span>
+          </a>
+          <a href="index.html" class="cx-popup-grid-item">
+            <span class="cx-popup-grid-icon">📊</span>
+            <span class="cx-popup-grid-name">PROGRESS</span>
+          </a>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(moreOverlay);
+
+    const toolsBtn = document.getElementById('nav-tools-btn');
+    const moreBtn = document.getElementById('nav-more-btn');
+    const toolsClose = document.getElementById('cx-tools-close');
+    const moreClose = document.getElementById('cx-more-close');
+
+    function openPopup(overlay) {
+      overlay.style.display = 'flex';
+      overlay.offsetHeight;
+      overlay.classList.add('active');
+    }
+
+    function closePopup(overlay) {
+      overlay.classList.remove('active');
+      setTimeout(() => {
+        if (!overlay.classList.contains('active')) {
+          overlay.style.display = 'none';
+        }
+      }, 250);
+    }
+
+    if (toolsBtn) {
+      toolsBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openPopup(toolsOverlay);
+        closePopup(moreOverlay);
+      });
+    }
+    if (moreBtn) {
+      moreBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openPopup(moreOverlay);
+        closePopup(toolsOverlay);
+      });
+    }
+    if (toolsClose) {
+      toolsClose.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closePopup(toolsOverlay);
+      });
+    }
+    if (moreClose) {
+      moreClose.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closePopup(moreOverlay);
+      });
+    }
+
+    window.addEventListener('click', (e) => {
+      if (e.target === toolsOverlay) closePopup(toolsOverlay);
+      if (e.target === moreOverlay) closePopup(moreOverlay);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNavPopups);
+  } else {
+    initNavPopups();
+  }
+})();
