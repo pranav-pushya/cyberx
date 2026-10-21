@@ -134,11 +134,11 @@
 
 /* ════════════ NAV ACTIVE STATE ════════════ */
 (function(){
-  const page = location.pathname.split('/').pop() || 'index.html';
+  const page = (location.pathname.split('/').pop() || 'index.html').replace('.html', '');
   document.querySelectorAll('.cx-nav-item').forEach(el=>{
-    const href = el.getAttribute('href')||'';
-    if(href && page.includes(href.replace('.html',''))){ el.classList.add('active'); }
-    if(page===''||page==='index.html'){ document.querySelector('[href="index.html"]')?.classList.add('active'); }
+    const href = (el.getAttribute('href')||'').split('/').pop().replace('.html', '');
+    if(href && (href === page || page.includes(href))){ el.classList.add('active'); }
+    if(page===''||page==='index'){ document.querySelector('[href="/index.html"], [href="index.html"]')?.classList.add('active'); }
   });
 })();
 

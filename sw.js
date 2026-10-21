@@ -1,27 +1,27 @@
 // sw.js — CyberX Service Worker for Offline App Caching
-const CACHE_NAME = 'cyberx-cache-v3';
+const CACHE_NAME = 'cyberx-cache-v4';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  '/learn.html',
-  '/tools.html',
-  '/attacks.html',
-  '/commands.html',
-  '/ports.html',
-  '/quiz.html',
-  '/ai-chat.html',
-  '/roadmap.html',
-  '/notes.html',
-  '/ctf.html',
-  '/osint.html',
+  '/pages/learn/learn.html',
+  '/pages/learn/roadmap.html',
+  '/pages/learn/quiz.html',
+  '/pages/tools/tools.html',
+  '/pages/tools/commands.html',
+  '/pages/tools/osint.html',
+  '/pages/tools/ports.html',
+  '/pages/security/attacks.html',
+  '/pages/security/ctf.html',
+  '/pages/ai/ai-chat.html',
+  '/pages/ai/notes.html',
   '/css/style.css',
   '/js/main.js',
   '/js/api.js',
   '/js/hud.js',
   '/js/sync.js',
   '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
+  '/assets/icons/icon-192.png',
+  '/assets/icons/icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {

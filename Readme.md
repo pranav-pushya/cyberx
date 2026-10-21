@@ -63,17 +63,17 @@
 | Module | File | Core Functionality |
 | :--- | :--- | :--- |
 | **Progress Ops** | `index.html` | Real-time mastery analytics, accuracy gauges, unlockable hacker achievements, and visit streak tracker. |
-| **Knowledge Base** | `learn.html` | Interactive curriculum covering OSINT, Network Scanning, Web Hacking, PrivEsc, and Cryptography with AI Knowledge Bursts. |
-| **Tool Analyzer** | `tools.html` | Deep architectural breakdowns, essential command flags, and attack chain recipes for Nmap, Burp Suite, Metasploit, and Wireshark. |
-| **Threat Matrix** | `attacks.html` | Detailed attack vector profiles (SQLi, XSS, CSRF, Buffer Overflow, Ransomware) with threat meters, detection, and countermeasures. |
-| **Terminal Cheats** | `commands.html` | Categorized Kali Linux commands cheat sheet with syntax explanations and powerful one-liner command chains. |
-| **AI Quizzer** | `quiz.html` | Adaptive difficulty multiple-choice quiz engine with robust answer parsing and automated progress tracking. |
-| **AI Mentor** | `ai-chat.html` | Interactive conversational terminal for scenario walkthroughs, payload analysis, and instant technical mentoring. |
-| **Certification Roadmap** | `roadmap.html` | Structured milestone tracker covering Foundations, Network Security, CEH, Pentesting, and Cloud Security. |
-| **Hacker Notepad** | `notes.html` | Persistent local & cloud-synced notes editor with one-click AI Markdown enhancement and auto-tagging. |
-| **CTF Assistant** | `ctf.html` | Client-side decoders (Base64, Hex, Binary, URL, ROT13) and AI crypto-analysis for identifying obscure ciphers and hashes. |
-| **OSINT Suite** | `osint.html` | Categorized directory and dynamic cheat sheets for open-source intelligence tools across domains, emails, IPs, and images. |
-| **Port Reference** | `ports.html` | Interactive TCP/UDP protocol database featuring CEH exam prep mode, vulnerability analysis, and port deep dives. |
+| **Curriculum** | `pages/learn/learn.html` | Interactive curriculum covering OSINT, Network Scanning, Web Hacking, PrivEsc, and Cryptography with AI Knowledge Bursts. |
+| **Certification Roadmap** | `pages/learn/roadmap.html` | Structured milestone tracker covering Foundations, Network Security, CEH, Pentesting, and Cloud Security. |
+| **AI Quizzer** | `pages/learn/quiz.html` | Adaptive difficulty multiple-choice quiz engine with robust answer parsing and automated progress tracking. |
+| **Tool Analyzer** | `pages/tools/tools.html` | Deep architectural breakdowns, essential command flags, and attack chain recipes for Nmap, Burp Suite, Metasploit, and Wireshark. |
+| **Terminal Cheats** | `pages/tools/commands.html` | Categorized Kali Linux commands cheat sheet with syntax explanations and powerful one-liner command chains. |
+| **OSINT Suite** | `pages/tools/osint.html` | Categorized directory and dynamic cheat sheets for open-source intelligence tools across domains, emails, IPs, and images. |
+| **Port Reference** | `pages/tools/ports.html` | Interactive TCP/UDP protocol database featuring CEH exam prep mode, vulnerability analysis, and port deep dives. |
+| **Threat Matrix** | `pages/security/attacks.html` | Detailed attack vector profiles (SQLi, XSS, CSRF, Buffer Overflow, Ransomware) with threat meters, detection, and countermeasures. |
+| **CTF Assistant** | `pages/security/ctf.html` | Client-side decoders (Base64, Hex, Binary, URL, ROT13) and AI crypto-analysis for identifying obscure ciphers and hashes. |
+| **AI Mentor** | `pages/ai/ai-chat.html` | Interactive conversational terminal for scenario walkthroughs, payload analysis, and instant technical mentoring. |
+| **Hacker Notepad** | `pages/ai/notes.html` | Persistent local & cloud-synced notes editor with one-click AI Markdown enhancement and auto-tagging. |
 
 ---
 
@@ -81,41 +81,54 @@
 
 ```
 cyberx/
-├── 📄 index.html              # Main operations dashboard & analytics
-├── 📄 learn.html              # Curriculum & topic breakdowns
-├── 📄 tools.html              # Pentest tool analyzer & command generator
-├── 📄 attacks.html            # Threat breakdown & defense matrix
-├── 📄 commands.html           # Terminal command cheat sheets & chains
-├── 📄 quiz.html               # Adaptive AI-driven quiz arena
-├── 📄 ai-chat.html            # Direct conversational AI terminal
-├── 📄 roadmap.html            # Certification pathway tracker
-├── 📄 notes.html              # Cloud-synced research notepad
-├── 📄 ctf.html                # Cryptography cracker & CTF decoder
-├── 📄 osint.html              # OSINT directory & helper toolkit
-├── 📄 ports.html              # Protocol database & CEH exam trainer
+├── 📄 index.html                  # Main operations dashboard & telemetry
+│
+├── 📂 pages/                      # Categorized application modules
+│   ├── 📂 learn/                  # Curriculum & Certifications
+│   │   ├── 📄 learn.html          # Interactive topic curriculum
+│   │   ├── 📄 roadmap.html        # Certification roadmap tracker
+│   │   └── 📄 quiz.html           # AI-powered adaptive quiz arena
+│   │
+│   ├── 📂 tools/                  # Pentesting & Analysis Toolkits
+│   │   ├── 📄 tools.html          # Pentest tool analyzer & chain generator
+│   │   ├── 📄 commands.html       # Kali Linux command cheat sheets
+│   │   ├── 📄 osint.html          # OSINT directory & helper toolkit
+│   │   └── 📄 ports.html          # Protocol registry & CEH study mode
+│   │
+│   ├── 📂 security/               # Threats & CTF Cryptanalysis
+│   │   ├── 📄 attacks.html        # Attack breakdown & defense matrix
+│   │   └── 📄 ctf.html            # Auto decoder & CTF cryptography cracker
+│   │
+│   └── 📂 ai/                     # AI Mentorship & Notes
+│       ├── 📄 ai-chat.html        # Real-time Groq 120B AI mentor chat
+│       └── 📄 notes.html          # Cloud-synced research notepad
+│
+├── 📂 assets/                     # Media & PWA icons
+│   └── 📂 icons/
+│       ├── 🖼️ icon-192.png        # Native PWA icon (192x192)
+│       └── 🖼️ icon-512.png        # Native splash icon (512x512)
 │
 ├── 📂 css/
-│   └── 🎨 style.css           # Global hacker palette, glassmorphism, & layout
+│   └── 🎨 style.css               # Global hacker palette, glassmorphism, & layout
 │
 ├── 📂 js/
-│   ├── ⚙️ api.js              # Groq Cloud API integration & proxy client
-│   ├── 🕹️ hud.js              # Canvas radar, audio waveform, & clock telemetry
-│   ├── 🌐 main.js             # State management, stats engine, & navigation popups
-│   └── ☁️ sync.js             # Real-time Firestore cloud synchronization
+│   ├── ⚙️ api.js                  # Groq Cloud API integration & proxy client
+│   ├── 🕹️ hud.js                  # Canvas radar, audio waveform, & clock telemetry
+│   ├── 🌐 main.js                 # State management, stats engine, & navigation popups
+│   └── ☁️ sync.js                 # Real-time Firestore cloud synchronization
 │
-├── 📄 manifest.json           # Web App Manifest for PWA installation
-├── 📄 sw.js                   # Service Worker cache management (v3)
-├── 🖼️ icon-192.png            # High-resolution PWA application icon (192x192)
-├── 🖼️ icon-512.png            # High-resolution splash icon (512x512)
+├── 📂 scripts/                    # Build & automation scripts
+│   └── ⚙️ sync-env.js             # Environment synchronization pre-deploy hook
 │
-├── ⚙️ server.js               # Local Node.js development server with API proxy
-├── ⚙️ sync-env.js             # Pre-deployment environment synchronization script
-├── ⚙️ firebase.json           # Firebase Hosting & Firestore configuration
-├── ⚙️ firestore.rules         # Security rules for Firestore cloud sync
-├── ⚙️ firestore.indexes.json  # Database indexes for Firestore
-├── 📄 package.json            # Scripts & project metadata
-├── 📄 .env.example            # Environment template for Groq API configuration
-└── 📄 Readme.md               # Platform documentation
+├── 📄 manifest.json               # Web App Manifest for PWA installation
+├── 📄 sw.js                       # Service Worker cache management (v4)
+├── ⚙️ server.js                   # Local Node.js development server with API proxy
+├── ⚙️ firebase.json               # Firebase Hosting & Firestore configuration
+├── ⚙️ firestore.rules             # Security rules for Firestore cloud sync
+├── ⚙️ firestore.indexes.json      # Database indexes for Firestore
+├── 📄 package.json                # Scripts & project metadata
+├── 📄 .env.example                # Environment template for Groq API configuration
+└── 📄 Readme.md                   # Platform documentation
 ```
 
 ---
