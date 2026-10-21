@@ -930,7 +930,7 @@ async function getDeepDive(portNum, protocol, btnEl) {
     diveOutput.textContent = response;
   } catch (e) {
     diveOutput.className = 'cx-output error';
-    diveOutput.textContent = `[CONNECTION ERROR] ${e.message}\n\nCheck Groq API key in js/api.js`;
+    diveOutput.textContent = `[CONNECTION ERROR] ${e.message}\n\nCheck Groq API key in .env`;
   } finally {
     btnEl.disabled = false;
   }

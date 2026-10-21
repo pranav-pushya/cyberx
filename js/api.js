@@ -86,6 +86,7 @@ async function callGroq(messages, systemOverride) {
     if (res.ok) {
       const data = await res.json();
       if (data.choices && data.choices[0] && data.choices[0].message) {
+        try { if (window.Stats) window.Stats.inc('ai_queries'); } catch (_) {}
         return data.choices[0].message.content;
       }
     }
@@ -110,6 +111,7 @@ async function callGroq(messages, systemOverride) {
       throw new Error(err.error?.message || 'API Error: ' + res.status);
     }
     const data = await res.json();
+    try { if (window.Stats) window.Stats.inc('ai_queries'); } catch (_) {}
     return data.choices[0].message.content;
   }
 

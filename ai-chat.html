@@ -288,7 +288,7 @@ async function sendChat() {
     Stats.inc('ai_queries');
   } catch(e) {
     thinkEl.classList.add('error');
-    updateMsg(thinkEl, '[CONNECTION ERROR]\n' + e.message + '\n\nCheck Groq API key in js/api.js');
+    updateMsg(thinkEl, '[CONNECTION ERROR]\n' + e.message + '\n\nCheck Groq API key in .env');
   }
 
   send.disabled = false;

@@ -1230,7 +1230,7 @@ async function loadTip(){
     out.className='tip-output';out.textContent=text;
   }catch(e){
     out.className='tip-output error';
-    out.textContent='[ERROR] '+e.message+'\n\nInsert Groq API key in js/api.js';
+    out.textContent='[ERROR] '+e.message+'\n\nInsert Groq API key in .env';
   }
   btn.disabled=false;
 }

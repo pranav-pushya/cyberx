@@ -715,7 +715,7 @@ async function getAdvice(phaseNum, phaseName) {
     adviceOut.textContent = text;
   } catch (e) {
     adviceOut.className = 'cx-output error';
-    adviceOut.textContent = `[CONNECTION ERROR] ${e.message}\n\nCheck Groq API key in js/api.js`;
+    adviceOut.textContent = `[CONNECTION ERROR] ${e.message}\n\nCheck Groq API key in .env`;
   }
   
   setBtnState(`advice-btn-${phaseNum}`, false);

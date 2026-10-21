@@ -109,65 +109,147 @@
 
 <script src="js/api.js"></script><script src="js/main.js"></script><script src="js/hud.js"></script>
 <script>
-let diff='beginner', topic='any cybersecurity topic', qData=null, score=0, total=0, correct=0;
-initChips('#diff-chips', v=>{ diff=v; });
-initChips('#topic-chips', v=>{ topic=v; });
+let diff = 'beginner', topic = 'any cybersecurity topic', qData = null;
+let total = (window.Stats && Stats.val('quiz_total')) || 0;
+let correct = (window.Stats && Stats.val('quiz_correct')) || 0;
 
-function updateScore(){
-  document.getElementById('quiz-score').textContent=correct+' / '+total;
-  document.getElementById('hud-score').textContent=correct;
-  document.getElementById('hud-miss').textContent=total-correct;
-  const acc=total?Math.round(correct/total*100):0;
-  document.getElementById('hud-acc').textContent=acc+'%';
-  document.getElementById('acc-fill').style.width=acc+'%';
-  document.getElementById('acc-pct').textContent=acc+'%';
+initChips('#diff-chips', v => { diff = v; });
+initChips('#topic-chips', v => { topic = v; });
+
+function updateScore() {
+  if (window.Stats) {
+    total = Stats.val('quiz_total') || 0;
+    correct = Stats.val('quiz_correct') || 0;
+  }
+  document.getElementById('quiz-score').textContent = correct + ' / ' + total;
+  document.getElementById('hud-score').textContent = correct;
+  document.getElementById('hud-miss').textContent = Math.max(0, total - correct);
+  const acc = total ? Math.round(correct / total * 100) : 0;
+  document.getElementById('hud-acc').textContent = acc + '%';
+  document.getElementById('acc-fill').style.width = acc + '%';
+  document.getElementById('acc-pct').textContent = acc + '%';
+}
+updateScore();
+
+function findCorrectOptionIndex(rawAnswer, rawOptions, cleanOpts) {
+  if (typeof rawAnswer === 'number' && rawAnswer >= 0 && rawAnswer < rawOptions.length) {
+    return rawAnswer;
+  }
+  const ansStr = String(rawAnswer || '').trim();
+
+  // 1. Direct letter matching: "A", "B", "C", "D", "Option A", "A.", "A)"
+  const letterMatch = ansStr.match(/^(?:option\s+)?([A-D])(?:[\.\)\:\s]|$)/i);
+  if (letterMatch) {
+    const idx = ['A', 'B', 'C', 'D'].indexOf(letterMatch[1].toUpperCase());
+    if (idx !== -1 && idx < rawOptions.length) return idx;
+  }
+
+  // 2. Cleaned text matching
+  const cleanAns = ansStr.replace(/^[A-Da-d0-4][\.\)\:\s\-]+/, '').trim().toLowerCase();
+  for (let i = 0; i < cleanOpts.length; i++) {
+    const opt = cleanOpts[i].toLowerCase();
+    if (opt === cleanAns || (cleanAns.length > 2 && opt.includes(cleanAns)) || (opt.length > 2 && cleanAns.includes(opt))) {
+      return i;
+    }
+  }
+
+  // 3. Raw options matching
+  for (let i = 0; i < rawOptions.length; i++) {
+    const opt = String(rawOptions[i]).toLowerCase();
+    if (opt === ansStr.toLowerCase() || opt.includes(ansStr.toLowerCase())) {
+      return i;
+    }
+  }
+
+  return 0; // fallback to first option
 }
 
-async function genQuiz(){
-  setBtnState('quiz-btn',true);
-  document.getElementById('next-btn').style.display='none';
-  document.getElementById('quiz-q').textContent='> GENERATING '+diff.toUpperCase()+' CHALLENGE...';
-  document.getElementById('quiz-q').style.color='var(--y)';
-  document.getElementById('quiz-opts').innerHTML='';
-  document.getElementById('quiz-result').textContent='';
-  qData=null;
-  try{
-    const txt=await askGroq(
-      `Generate a single ${diff} cybersecurity MCQ on topic: ${topic}.\nTest real understanding not memorization.\nRespond ONLY with valid compact JSON no markdown no backticks:\n{"q":"question","options":["A. opt","B. opt","C. opt","D. opt"],"answer":"A","explanation":"why A correct and others wrong 2-3 sentences"}`,
-      'You are a cybersecurity quiz generator. Return ONLY valid compact JSON. No markdown. No backticks. No preamble.'
+async function genQuiz() {
+  setBtnState('quiz-btn', true);
+  document.getElementById('next-btn').style.display = 'none';
+  document.getElementById('quiz-q').textContent = '> GENERATING ' + diff.toUpperCase() + ' CHALLENGE...';
+  document.getElementById('quiz-q').style.color = 'var(--y)';
+  document.getElementById('quiz-opts').innerHTML = '';
+  document.getElementById('quiz-result').textContent = '';
+  qData = null;
+
+  try {
+    const txt = await askGroq(
+      `Generate a single ${diff} cybersecurity multiple-choice question on topic: ${topic}.\n` +
+      `Test real practical cybersecurity understanding, not trivial trivia.\n` +
+      `Respond ONLY with valid compact JSON (no markdown fences, no backticks, no preamble):\n` +
+      `{"q":"Question text","options":["Option 1","Option 2","Option 3","Option 4"],"answer":"A","explanation":"Why the correct option is right and the others are incorrect (2-3 sentences)."}`
     );
-    const d=safeParseJSON(txt);
-    if(!d||!d.q||!d.options||!d.answer) throw new Error('Bad response. Try again.');
-    qData=d;
-    document.getElementById('quiz-q').textContent=d.q;
-    document.getElementById('quiz-opts').innerHTML='';
-    d.options.forEach(opt=>{
-      const b=document.createElement('button');
-      b.className='quiz-option'; b.textContent=opt;
-      b.onclick=()=>{ checkAns(opt[0].toUpperCase(),b); document.getElementById('next-btn').style.display='flex'; };
+    const d = safeParseJSON(txt);
+    if (!d || !d.q || !Array.isArray(d.options) || d.options.length < 2 || !d.answer) {
+      throw new Error('Invalid challenge data format. Please try again.');
+    }
+    qData = d;
+    document.getElementById('quiz-q').textContent = d.q;
+    document.getElementById('quiz-opts').innerHTML = '';
+
+    const letters = ['A', 'B', 'C', 'D'];
+    const cleanOptions = d.options.map(opt => String(opt).replace(/^[A-Da-d0-4][\.\)\:\s\-]+/, '').trim());
+    const correctIdx = findCorrectOptionIndex(d.answer, d.options, cleanOptions);
+
+    cleanOptions.forEach((cleanOpt, idx) => {
+      const b = document.createElement('button');
+      b.className = 'quiz-option';
+      const letter = letters[idx] || String(idx + 1);
+      b.textContent = letter + '. ' + cleanOpt;
+      b.onclick = () => {
+        checkAns(idx, correctIdx, b);
+        document.getElementById('next-btn').style.display = 'flex';
+      };
       document.getElementById('quiz-opts').appendChild(b);
     });
-    total++; updateScore();
-  }catch(e){
-    document.getElementById('quiz-q').textContent='[ERROR] '+e.message;
-    document.getElementById('quiz-q').style.color='var(--r)';
+  } catch (e) {
+    document.getElementById('quiz-q').textContent = '[ERROR] ' + e.message;
+    document.getElementById('quiz-q').style.color = 'var(--r)';
   }
-  setBtnState('quiz-btn',false);
+  setBtnState('quiz-btn', false);
 }
 
-function checkAns(sel,btn){
-  if(!qData) return;
-  document.querySelectorAll('.quiz-option').forEach(b=>b.disabled=true);
-  const ok=sel===qData.answer.toUpperCase();
-  btn.classList.add(ok?'correct':'wrong');
-  if(!ok) document.querySelectorAll('.quiz-option').forEach(b=>{ if(b.textContent[0].toUpperCase()===qData.answer.toUpperCase()) b.classList.add('correct'); });
-  const res=document.getElementById('quiz-result');
-  res.style.color=ok?'var(--g)':'var(--r)';
-  res.textContent=(ok?'✓ CORRECT — ':'✗ WRONG — ')+qData.explanation;
-  if(ok) correct++; updateScore();
+function checkAns(selectedIdx, correctIdx, btn) {
+  if (!qData) return;
+  const allBtns = document.querySelectorAll('.quiz-option');
+  allBtns.forEach(b => b.disabled = true);
+
+  const ok = (selectedIdx === correctIdx);
+  btn.classList.add(ok ? 'correct' : 'wrong');
+  if (!ok && allBtns[correctIdx]) {
+    allBtns[correctIdx].classList.add('correct');
+  }
+
+  const res = document.getElementById('quiz-result');
+  res.style.color = ok ? 'var(--g)' : 'var(--r)';
+  res.textContent = (ok ? '✓ CORRECT — ' : '✗ WRONG — ') + (qData.explanation || '');
+
+  total++;
+  if (window.Stats) Stats.inc('quiz_total');
+  if (ok) {
+    correct++;
+    if (window.Stats) Stats.inc('quiz_correct');
+  }
+  updateScore();
 }
 
-function resetQuiz(){ score=0; total=0; correct=0; updateScore(); document.getElementById('quiz-q').textContent='[ Tap GENERATE CHALLENGE to begin ]'; document.getElementById('quiz-q').style.color='var(--y)'; document.getElementById('quiz-opts').innerHTML=''; document.getElementById('quiz-result').textContent=''; document.getElementById('next-btn').style.display='none'; }
+function resetQuiz() {
+  total = 0;
+  correct = 0;
+  if (window.Stats) {
+    const s = Stats.get();
+    s['quiz_total'] = 0;
+    s['quiz_correct'] = 0;
+    Stats.set(s);
+  }
+  updateScore();
+  document.getElementById('quiz-q').textContent = '[ Tap GENERATE CHALLENGE to begin ]';
+  document.getElementById('quiz-q').style.color = 'var(--y)';
+  document.getElementById('quiz-opts').innerHTML = '';
+  document.getElementById('quiz-result').textContent = '';
+  document.getElementById('next-btn').style.display = 'none';
+}
 </script>
 
 <!-- ══════════════ NAVIGATION POPUPS ══════════════ -->
