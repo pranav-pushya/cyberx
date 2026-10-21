@@ -1,7 +1,40 @@
-// api.js — Groq API handler using .env via backend proxy / local server
+// api.js — Groq API handler using .env via backend proxy / local server / Firebase Hosting
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
 const GROQ_DIRECT_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const LOCAL_PROXY_URL = '/api/groq';
+
+let cachedApiKey = '';
+
+async function resolveGroqKey() {
+  if (cachedApiKey) return cachedApiKey;
+
+  // 1. Check window global
+  if (window.ENV_GROQ_API_KEY) {
+    cachedApiKey = window.ENV_GROQ_API_KEY.trim();
+    return cachedApiKey;
+  }
+
+  // 2. Check localStorage
+  const localKey = (localStorage.getItem('cx_groq_key') || '').trim();
+  if (localKey) {
+    cachedApiKey = localKey;
+    return cachedApiKey;
+  }
+
+  // 3. Try loading js/env.json (synced from .env for Firebase Hosting)
+  try {
+    const res = await fetch('js/env.json');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.GROQ_API_KEY) {
+        cachedApiKey = data.GROQ_API_KEY.trim();
+        return cachedApiKey;
+      }
+    }
+  } catch (_) {}
+
+  return '';
+}
 
 const SYSTEM_PROMPT = `You are CyberX AI — a senior penetration tester and cybersecurity mentor with 15 years of experience.
 You teach like a no-nonsense hacker: direct, technical, practical, zero fluff.
@@ -19,7 +52,7 @@ Rules:
 - Occasionally drop a "pro hacker insight" that sounds impressive`;
 
 /**
- * Call Groq API via local server proxy (reads key from .env) or fallback
+ * Call Groq API via local server proxy (reads key from .env) or Firebase Hosting direct call
  * @param {Array} messages - [{role, content}, ...]
  * @param {string} [systemOverride] - optional system prompt override
  * @returns {Promise<string>}
@@ -38,7 +71,7 @@ async function callGroq(messages, systemOverride) {
     stream: false
   };
 
-  // 1. Primary: Use local server proxy endpoint (reads .env directly)
+  // 1. Primary: Use local server proxy endpoint if running locally with server.js
   try {
     const res = await fetch(LOCAL_PROXY_URL, {
       method: 'POST',
@@ -51,28 +84,23 @@ async function callGroq(messages, systemOverride) {
       if (data.choices && data.choices[0] && data.choices[0].message) {
         return data.choices[0].message.content;
       }
-    } else {
-      const err = await res.json().catch(() => ({}));
-      if (err.error) throw new Error(err.error);
     }
-  } catch (proxyErr) {
-    if (proxyErr.message && proxyErr.message.includes('GROQ_API_KEY')) {
-      throw proxyErr;
-    }
-    // If proxy unreachable (e.g. static file without server.js), try fallback below
+  } catch (_) {
+    // Local proxy unreachable (e.g. running on Firebase Hosting), fallback to direct call
   }
 
-  // 2. Fallback: Check window.ENV_GROQ_API_KEY (from js/env.js) or localStorage
-  const fallbackKey = (window.ENV_GROQ_API_KEY || localStorage.getItem('cx_groq_key') || '').trim();
-  if (fallbackKey) {
+  // 2. Direct Groq API call using key from js/env.json (Firebase Hosting) or fallback
+  const apiKey = await resolveGroqKey();
+  if (apiKey) {
     const res = await fetch(GROQ_DIRECT_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + fallbackKey
+        'Authorization': 'Bearer ' + apiKey
       },
       body: JSON.stringify(payload)
     });
+
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error?.message || 'API Error: ' + res.status);
@@ -81,7 +109,7 @@ async function callGroq(messages, systemOverride) {
     return data.choices[0].message.content;
   }
 
-  throw new Error('GROQ_API_KEY is not defined in your .env file. Please add your key to .env and run "npm start".');
+  throw new Error('GROQ_API_KEY is not defined in your .env file. Please check .env and run "npm run deploy".');
 }
 
 /**

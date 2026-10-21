@@ -2,7 +2,9 @@
 .env
 .env.local
 .env.*.local
+.firebase/
 js/env.js
+js/env.json
 
 # IDE and Editor configurations
 .vscode/
